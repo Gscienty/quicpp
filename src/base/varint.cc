@@ -4,7 +4,8 @@ quicpp::base::varint::varint(uint64_t &&value)
     : value(value) { }
 
 quicpp::base::varint::varint(std::basic_istream<uint8_t> &buf) {
-    uint8_t first_byte = buf.peek();
+    this->value = 0;
+    uint8_t first_byte = buf.get();
     uint8_t type = first_byte >> 6;
     size_t size = 0;
     switch (type) {
@@ -83,4 +84,12 @@ std::basic_string<uint8_t> quicpp::base::varint::encode() const {
     }
 
     return ret;
+}
+
+uint64_t &quicpp::base::varint::get_value() {
+    return this->value;
+}
+
+quicpp::base::varint::operator uint64_t() const {
+    return this->value;
 }

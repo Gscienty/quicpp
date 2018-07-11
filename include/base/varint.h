@@ -26,6 +26,8 @@ namespace base {
         varint(uint64_t &&);
         size_t size() const;
         std::basic_string<uint8_t> encode() const;
+        uint64_t &get_value();
+        operator uint64_t() const;
     };
 }
 }
