@@ -42,6 +42,20 @@ TEST(varint, encode) {
     std::basic_string<uint8_t> encoded8 = len8.encode();
     uint8_t expect8[] = { 0xc2, 0x19, 0x7c, 0x5e, 0xff, 0x14, 0xe8, 0x8c };
     __inl_expcet_encoded(expect8, sizeof(expect8), encoded8);
+
+}
+
+TEST(varint, encode_outbuf) {
+    std::basic_ostringstream<uint8_t> out;
+    uint8_t expect_8[8];
+    out.rdbuf()->pubsetbuf(expect_8, sizeof(expect_8));
+
+    quicpp::base::varint len8(151288809941952652);
+
+    len8.encode(out);
+    std::basic_string<uint8_t> encoded_8(expect_8, expect_8 + sizeof(expect_8));
+    uint8_t expect8[] = { 0xc2, 0x19, 0x7c, 0x5e, 0xff, 0x14, 0xe8, 0x8c };
+    __inl_expcet_encoded(expect8, sizeof(expect8), encoded_8);
 }
 
 TEST(varint, decode) {

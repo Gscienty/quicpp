@@ -56,6 +56,33 @@ size_t quicpp::base::varint::size() const {
     }
 }
 
+void quicpp::base::varint::encode(std::basic_ostream<uint8_t> &out) const {
+    size_t size = this->size();
+    uint8_t mask = 0;
+    // append prefix at first byte
+    switch (size) {
+        case quicpp::base::VARINT_LENGTH_1:
+            mask = 0x00;
+            break;
+        case quicpp::base::VARINT_LENGTH_2:
+            mask = 0x40;
+            break;
+        case quicpp::base::VARINT_LENGTH_4:
+            mask = 0x80;
+            break;
+        case quicpp::base::VARINT_LENGTH_8:
+            mask = 0xC0;
+            break;
+    }
+    // host byte order: little endian
+    // network byte order: big endian
+    // transform host byte order into network byte order
+    out.put((reinterpret_cast<const uint8_t *>(&this->value)[size - 1]) | mask);
+    for (size_t i = 1; i < size; i++) {
+        out.put(reinterpret_cast<const uint8_t *>(&this->value)[size - 1 - i]);
+    }
+}
+
 std::basic_string<uint8_t> quicpp::base::varint::encode() const {
     std::basic_string<uint8_t> ret;
 
