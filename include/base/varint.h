@@ -29,6 +29,7 @@ namespace base {
         varint(uint64_t &&);
         // encoded variable length int's size
         virtual size_t size() const override;
+        static size_t size(const uint64_t value);
         // encode
         virtual void encode(std::basic_ostream<uint8_t> &out) const override;
         // get value

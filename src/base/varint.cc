@@ -38,22 +38,26 @@ quicpp::base::varint::varint(std::basic_istream<uint8_t> &buf) {
     }
 }
 
-size_t quicpp::base::varint::size() const {
-    if (this->value < quicpp::base::VARINT_MAX_1) {
+size_t quicpp::base::varint::size(const uint64_t value) {
+    if (value < quicpp::base::VARINT_MAX_1) {
         return quicpp::base::VARINT_LENGTH_1;
     }
-    else if (this->value < quicpp::base::VARINT_MAX_2) {
+    else if (value < quicpp::base::VARINT_MAX_2) {
         return quicpp::base::VARINT_LENGTH_2;
     }
-    else if (this->value < quicpp::base::VARINT_MAX_4) {
+    else if (value < quicpp::base::VARINT_MAX_4) {
         return quicpp::base::VARINT_LENGTH_4;
     }
-    else if (this->value < quicpp::base::VARINT_MAX_8) {
+    else if (value < quicpp::base::VARINT_MAX_8) {
         return quicpp::base::VARINT_LENGTH_8;
     }
     else {
         return 0;
     }
+}
+
+size_t quicpp::base::varint::size() const {
+    return quicpp::base::varint::size(this->value);
 }
 
 void quicpp::base::varint::encode(std::basic_ostream<uint8_t> &out) const {
