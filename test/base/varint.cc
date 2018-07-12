@@ -15,7 +15,7 @@ TEST(varint, length) {
     EXPECT_EQ(quicpp::base::VARINT_LENGTH_8, len8.size());
 }
 
-void __inl_expcet_encoded(uint8_t expect[], size_t size, std::basic_string<uint8_t> &str) {
+void __inl_expcet_encoded(uint8_t expect[], size_t size, uint8_t str[]) {
     for (size_t i = 0; i < size; i++) {
         EXPECT_EQ(expect[i], str[i]);
     }
@@ -27,35 +27,29 @@ TEST(varint, encode) {
     quicpp::base::varint len4(494878333);
     quicpp::base::varint len8(151288809941952652);
 
-    std::basic_string<uint8_t> encoded1 = len1.encode();
+    std::basic_stringstream<uint8_t> out;
+    uint8_t out_buf[8];
+    out.rdbuf()->pubsetbuf(out_buf, 8);
+
+    len1.encode(out);
     uint8_t expect1[] = { 0x25 };
-    __inl_expcet_encoded(expect1, sizeof(expect1), encoded1);
+    __inl_expcet_encoded(expect1, sizeof(expect1), out_buf);
 
-    std::basic_string<uint8_t> encoded2 = len2.encode();
+    out.rdbuf()->pubseekpos(0);
+    len2.encode(out);
     uint8_t expect2[] = { 0x7B, 0xBD };
-    __inl_expcet_encoded(expect2, sizeof(expect2), encoded2);
+    __inl_expcet_encoded(expect2, sizeof(expect2), out_buf);
 
-    std::basic_string<uint8_t> encoded4 = len4.encode();
+    out.rdbuf()->pubseekpos(0);
+    len4.encode(out);
     uint8_t expect4[] = { 0x9d, 0x7f, 0x3e, 0x7d };
-    __inl_expcet_encoded(expect4, sizeof(expect4), encoded4);
+    __inl_expcet_encoded(expect4, sizeof(expect4), out_buf);
 
-    std::basic_string<uint8_t> encoded8 = len8.encode();
-    uint8_t expect8[] = { 0xc2, 0x19, 0x7c, 0x5e, 0xff, 0x14, 0xe8, 0x8c };
-    __inl_expcet_encoded(expect8, sizeof(expect8), encoded8);
-
-}
-
-TEST(varint, encode_outbuf) {
-    std::basic_ostringstream<uint8_t> out;
-    uint8_t expect_8[8];
-    out.rdbuf()->pubsetbuf(expect_8, sizeof(expect_8));
-
-    quicpp::base::varint len8(151288809941952652);
-
+    out.rdbuf()->pubseekpos(0);
     len8.encode(out);
-    std::basic_string<uint8_t> encoded_8(expect_8, expect_8 + sizeof(expect_8));
     uint8_t expect8[] = { 0xc2, 0x19, 0x7c, 0x5e, 0xff, 0x14, 0xe8, 0x8c };
-    __inl_expcet_encoded(expect8, sizeof(expect8), encoded_8);
+    __inl_expcet_encoded(expect8, sizeof(expect8), out_buf);
+
 }
 
 TEST(varint, decode) {

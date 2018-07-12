@@ -25,7 +25,6 @@ namespace base {
         varint(std::basic_istream<uint8_t> &buf);
         varint(uint64_t &&);
         size_t size() const;
-        std::basic_string<uint8_t> encode() const;
         void encode(std::basic_ostream<uint8_t> &out) const;
         uint64_t &get_value();
         operator uint64_t() const;
