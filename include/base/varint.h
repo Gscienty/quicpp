@@ -1,6 +1,7 @@
 #ifndef _QUICPP_VARINT_
 #define _QUICPP_VARINT_
 
+#include "encodable.h"
 #include <unistd.h>
 #include <stdint.h>
 #include <string>
@@ -18,15 +19,21 @@ namespace base {
     const uint64_t VARINT_MAX_4 = 1073741823;
     const uint64_t VARINT_MAX_8 = 4611686018427387903;
 
-    class varint {
+    class varint : public quicpp::encodable {
     private:
         uint64_t value;
     public:
+        // decode constructor
         varint(std::basic_istream<uint8_t> &buf);
+        // constructor
         varint(uint64_t &&);
-        size_t size() const;
-        void encode(std::basic_ostream<uint8_t> &out) const;
+        // encoded variable length int's size
+        virtual size_t size() const override;
+        // encode
+        virtual void encode(std::basic_ostream<uint8_t> &out) const override;
+        // get value
         uint64_t &get_value();
+        // get value
         operator uint64_t() const;
     };
 }
