@@ -1,5 +1,5 @@
-#ifndef _QUICPP_VARINT_
-#define _QUICPP_VARINT_
+#ifndef _QUICPP_BASE_VARINT_
+#define _QUICPP_BASE_VARINT_
 
 #include "encodable.h"
 #include <unistd.h>
