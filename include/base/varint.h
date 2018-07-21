@@ -23,6 +23,7 @@ namespace base {
     private:
         uint64_t value;
     public:
+        varint();
         // decode constructor
         varint(std::basic_istream<uint8_t> &buf);
         // constructor

@@ -1,5 +1,8 @@
 #include "base/varint.h"
 
+quicpp::base::varint::varint()
+    : value(0) { }
+
 quicpp::base::varint::varint(uint64_t &&value)
     : value(value) { }
 

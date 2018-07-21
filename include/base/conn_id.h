@@ -11,6 +11,7 @@ namespace base {
     private:
         std::basic_string<uint8_t> id;
     public:
+        conn_id();
         conn_id(std::basic_string<uint8_t> &&);
         conn_id(std::basic_istream<uint8_t> &in, const size_t len);
         virtual size_t size() const override;

@@ -1,5 +1,7 @@
 #include "base/conn_id.h"
 
+quicpp::base::conn_id::conn_id() { }
+
 quicpp::base::conn_id::conn_id(std::basic_string<uint8_t> &&id)
     : id(id) { }
 
