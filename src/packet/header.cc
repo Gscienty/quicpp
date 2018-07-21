@@ -1,5 +1,51 @@
 #include "packet/header.h"
 
+quicpp::packet::header::header(std::basic_istream<uint8_t> &in, const size_t dest_conn_id_len) {
+    uint8_t first_byte = in.get();
+    if ((first_byte & 0x80) != 0x00) {
+        // long packet type
+        this->header_form = quicpp::packet::header_form_long_header;
+        // packet type
+        this->packet_type = 0x7F & first_byte;
+        // version
+        this->version = quicpp::bigendian_decode<uint32_t>(in);
+        // id length
+        uint8_t id_length = in.get();
+        size_t dest_conn_id_len = ((id_length & 0xF0) >> 4) + 3;
+        size_t src_conn_id_len = ((id_length & 0x0F)) + 3;
+        // destination connection id
+        this->dest_conn_id = quicpp::base::conn_id(in, dest_conn_id_len);
+        // source connection id
+        this->src_conn_id = quicpp::base::conn_id(in, src_conn_id_len);
+        // payload length
+        this->payload_length = quicpp::base::varint(in);
+        // packet number
+        this->packet_number = quicpp::bigendian_decode<uint32_t>(in);
+    }
+    else {
+        // short header
+        this->header_form = quicpp::packet::header_form_short_header;
+        // key phase bit
+        this->key_phase = (first_byte & 0x40) != 0;
+        // destinaction connection id
+        this->dest_conn_id = quicpp::base::conn_id(in, dest_conn_id_len);
+        switch ((this->packet_number & 0x03)) {
+            case 0x00:
+                this->packet_number = uint32_t(quicpp::bigendian_decode<uint8_t>(in));
+                break;
+            case 0x01:
+                this->packet_number = uint32_t(quicpp::bigendian_decode<uint16_t>(in));
+                break;
+            case 0x02:
+                this->packet_number = uint32_t(quicpp::bigendian_decode<uint32_t>(in));
+                break;
+            default:
+                this->packet_number = 0;
+        }
+    }
+
+}
+
 size_t quicpp::packet::header::size() const {
     if (this->header_form == quicpp::packet::header_form_long_header) {
         return 1 + 4 + 1 + this->dest_conn_id.size() + 
@@ -34,23 +80,23 @@ void quicpp::packet::header::encode(std::basic_ostream<uint8_t> &out) const {
     }
     else {
         // header form | short packet type
-        uint8_t first_bit = 0x00;
+        uint8_t first_byte = 0x00;
         if (this->key_phase) {
-            first_bit |= 0x40;
+            first_byte |= 0x40;
         }
-        first_bit |= 0x30;
+        first_byte |= 0x30;
         if (this->packet_number < 0x100) {
             // one byte
-            first_bit |= 0x00;
+            first_byte |= 0x00;
         }
         else if (this->packet_number < 0x10000) {
             // two byte
-            first_bit |= 0x01;
+            first_byte |= 0x01;
         }
         else {
-            first_bit |= 0x02;
+            first_byte |= 0x02;
         }
-        out.put(first_bit);
+        out.put(first_byte);
         // destination connection id
         this->dest_conn_id.encode(out);
         // packet number
