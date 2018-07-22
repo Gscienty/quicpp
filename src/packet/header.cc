@@ -52,8 +52,12 @@ quicpp::packet::header::header(std::basic_istream<uint8_t> &in, const size_t des
 
 size_t quicpp::packet::header::size() const {
     if (this->header_form == quicpp::packet::header_form_long_header) {
-        return 1 + 4 + 1 + this->dest_conn_id.size() + 
-            this->src_conn_id.size() + this->payload_length.size() + this->packet_number_length;
+        size_t result = 1 + 4 + 1 + this->dest_conn_id.size() + this->src_conn_id.size();
+        if (this->version != 0x00000000) {
+            // version negotiation
+            result += this->payload_length.size() + this->packet_number_length;
+        }
+        return result;
     }
     return 1 + this->dest_conn_id.size() + this->packet_number_length;
 }
@@ -77,6 +81,10 @@ void quicpp::packet::header::encode(std::basic_ostream<uint8_t> &out) const {
         this->dest_conn_id.encode(out);
         // source connection id
         this->src_conn_id.encode(out);
+        if (this->version == 0x00000000) {
+            // version negotiation
+            return;
+        }
         // payload length
         this->payload_length.encode(out);
         // packet number
