@@ -17,6 +17,10 @@ quicpp::packet::header::header(std::basic_istream<uint8_t> &in, const size_t des
         this->dest_conn_id = quicpp::base::conn_id(in, dest_conn_id_len);
         // source connection id
         this->src_conn_id = quicpp::base::conn_id(in, src_conn_id_len);
+        if (this->version == 0x00000000) {
+            // version negotiation packet
+            return;
+        }
         // payload length
         this->payload_length = quicpp::base::varint(in);
         // packet number
