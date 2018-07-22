@@ -15,6 +15,9 @@ namespace frame {
     const uint8_t frame_type_max_stream_id      = 0x06;
     const uint8_t frame_type_ping               = 0x07;
     const uint8_t frame_type_blocked            = 0x08;
+    const uint8_t frame_type_stream_blocked     = 0x09;
+    const uint8_t frame_type_stream_id_blockd   = 0x0A;
+    const uint8_t frame_type_new_connection_id  = 0x0B;
 
     class frame : public encodable {
     public:
