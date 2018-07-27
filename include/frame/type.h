@@ -19,6 +19,7 @@ const uint8_t frame_type_stream_blocked     = 0x09;
 const uint8_t frame_type_stream_id_blockd   = 0x0A;
 const uint8_t frame_type_new_connection_id  = 0x0B;
 const uint8_t frame_type_stop_sending       = 0x0C;
+const uint8_t frame_type_ack                = 0x0D;
 
 class frame : public encodable {
 public:
