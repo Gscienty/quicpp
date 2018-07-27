@@ -28,6 +28,8 @@ public:
     varint(std::basic_istream<uint8_t> &buf);
     // constructor
     varint(uint64_t &&);
+    // constructor
+    varint(const uint64_t &);
     // encoded variable length int's size
     virtual size_t size() const override;
     static size_t size(const uint64_t value);
