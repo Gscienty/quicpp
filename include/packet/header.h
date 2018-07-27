@@ -10,31 +10,31 @@
 namespace quicpp {
 namespace packet {
 
-    const bool header_form_long_header = true;
-    const bool header_form_short_header = false;
+const bool header_form_long_header = true;
+const bool header_form_short_header = false;
 
-    const uint8_t header_type_initial = 0x7F;
-    const uint8_t header_type_retry = 0x7E;
-    const uint8_t header_type_handshake = 0x7D;
-    const uint8_t header_type_0RTT_protected = 0x7C;
+const uint8_t header_type_initial = 0x7F;
+const uint8_t header_type_retry = 0x7E;
+const uint8_t header_type_handshake = 0x7D;
+const uint8_t header_type_0RTT_protected = 0x7C;
 
-    class header : public quicpp::encodable {
-    private:
-        bool header_form;
-        bool key_phase;
-        uint8_t packet_type;
-        uint32_t version;
-        quicpp::base::conn_id dest_conn_id;
-        quicpp::base::conn_id src_conn_id;
-        quicpp::base::varint payload_length;
-        size_t packet_number_length;
-        uint32_t packet_number;
+class header : public quicpp::encodable {
+private:
+    bool header_form;
+    bool key_phase;
+    uint8_t packet_type;
+    uint32_t version;
+    quicpp::base::conn_id dest_conn_id;
+    quicpp::base::conn_id src_conn_id;
+    quicpp::base::varint payload_length;
+    size_t packet_number_length;
+    uint32_t packet_number;
 
-    public:
-        header(std::basic_istream<uint8_t> &in, const size_t dest_conn_id_len = 0);
-        virtual size_t size() const override;
-        virtual void encode(std::basic_ostream<uint8_t> &out) const override;
-    };
+public:
+    header(std::basic_istream<uint8_t> &in, const size_t dest_conn_id_len = 0);
+    virtual size_t size() const override;
+    virtual void encode(std::basic_ostream<uint8_t> &out) const override;
+};
 
 }
 }
