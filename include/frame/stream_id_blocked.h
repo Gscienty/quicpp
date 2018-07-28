@@ -8,12 +8,14 @@ namespace quicpp {
 namespace frame {
 class stream_id_blocked : public quicpp::frame::frame {
 private:
-    quicpp::base::varint stream_id; 
+    quicpp::base::varint _stream_id; 
 public:
+    stream_id_blocked();
     stream_id_blocked(std::basic_istream<uint8_t> &in);
     virtual uint8_t type() const override;
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
+    quicpp::base::varint &stream_id();
 };
 }
 }
