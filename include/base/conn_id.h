@@ -9,7 +9,7 @@ namespace quicpp {
 namespace base {
 class conn_id : public quicpp::encodable {
 private:
-    std::basic_string<uint8_t> id;
+    std::basic_string<uint8_t> _id;
 public:
     conn_id();
     conn_id(std::basic_string<uint8_t> &&);
@@ -18,6 +18,7 @@ public:
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
     bool operator==(const conn_id &other_id) const;
+    std::basic_string<uint8_t> &id();
 };
 }
 }

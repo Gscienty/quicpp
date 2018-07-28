@@ -1,46 +1,46 @@
 #include "base/varint.h"
 
 quicpp::base::varint::varint()
-    : value(0) {}
+    : _value(0) {}
 
 quicpp::base::varint::varint(uint64_t &&value)
-    : value(value) {}
+    : _value(value) {}
 
 quicpp::base::varint::varint(const uint64_t &value)
-    : value(value) {}
+    : _value(value) {}
 
 quicpp::base::varint::varint(std::basic_istream<uint8_t> &buf) {
-    this->value = 0;
+    this->_value = 0;
     uint8_t first_byte = buf.get();
     uint8_t type = first_byte >> 6;
     size_t size = 0;
     switch (type) {
         case 0x00:
             // 1 bytes
-            this->value = first_byte & 0x3F;
+            this->_value = first_byte & 0x3F;
             size = 1;
             break;
         case 0x01:
             // 2 bytes
             size = 2;
-            reinterpret_cast<uint8_t *>(&this->value)[size - 1] = first_byte & 0x3F;
+            reinterpret_cast<uint8_t *>(&this->_value)[size - 1] = first_byte & 0x3F;
             break;
         case 0x02:
             // 4 bytes
             size = 4;
-            reinterpret_cast<uint8_t *>(&this->value)[size - 1] = first_byte & 0x3F;
+            reinterpret_cast<uint8_t *>(&this->_value)[size - 1] = first_byte & 0x3F;
             break;
         case 0x03:
             // 8 bytes
             size = 8;
-            reinterpret_cast<uint8_t *>(&this->value)[size - 1] = first_byte & 0x3F;
+            reinterpret_cast<uint8_t *>(&this->_value)[size - 1] = first_byte & 0x3F;
             break;
     }
 
     if (size == 0) { return ; }
     
     for (size_t i = 1; i < size; i++) {
-        reinterpret_cast<uint8_t *>(&this->value)[size - 1 - i] = buf.get();
+        reinterpret_cast<uint8_t *>(&this->_value)[size - 1 - i] = buf.get();
     }
 }
 
@@ -63,7 +63,7 @@ size_t quicpp::base::varint::size(const uint64_t value) {
 }
 
 size_t quicpp::base::varint::size() const {
-    return quicpp::base::varint::size(this->value);
+    return quicpp::base::varint::size(this->_value);
 }
 
 void quicpp::base::varint::encode(std::basic_ostream<uint8_t> &out) const {
@@ -87,16 +87,16 @@ void quicpp::base::varint::encode(std::basic_ostream<uint8_t> &out) const {
     // host byte order: little endian
     // network byte order: big endian
     // transform host byte order into network byte order
-    out.put((reinterpret_cast<const uint8_t *>(&this->value)[size - 1]) | mask);
+    out.put((reinterpret_cast<const uint8_t *>(&this->_value)[size - 1]) | mask);
     for (size_t i = 1; i < size; i++) {
-        out.put(reinterpret_cast<const uint8_t *>(&this->value)[size - 1 - i]);
+        out.put(reinterpret_cast<const uint8_t *>(&this->_value)[size - 1 - i]);
     }
 }
 
-uint64_t &quicpp::base::varint::get_value() {
-    return this->value;
+uint64_t &quicpp::base::varint::value() {
+    return this->_value;
 }
 
 quicpp::base::varint::operator uint64_t() const {
-    return this->value;
+    return this->_value;
 }

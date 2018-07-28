@@ -21,7 +21,7 @@ const uint64_t VARINT_MAX_8 = 4611686018427387903;
 
 class varint : public quicpp::encodable {
 private:
-    uint64_t value;
+    uint64_t _value;
 public:
     varint();
     // decode constructor
@@ -36,7 +36,7 @@ public:
     // encode
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
     // get value
-    uint64_t &get_value();
+    uint64_t &value();
     // get value
     operator uint64_t() const;
 };
