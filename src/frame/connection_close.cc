@@ -9,7 +9,7 @@ quicpp::frame::connection_close::connection_close(std::basic_istream<uint8_t> &i
     in.get(const_cast<uint8_t *>(this->reason_phrase.data()), reason_phrase_length.get_value());
 }
 
-uint8_t quicpp::frame::connection_close::get_type() const {
+uint8_t quicpp::frame::connection_close::type() const {
     return quicpp::frame::frame_type_connection_close;
 }
 
@@ -19,7 +19,7 @@ size_t quicpp::frame::connection_close::size() const {
 }
 
 void quicpp::frame::connection_close::encode(std::basic_ostream<uint8_t> &out) const {
-    out.put(this->get_type());
+    out.put(this->type());
     quicpp::bigendian_encode(out, this->error_code);
     quicpp::base::varint(this->reason_phrase.size()).encode(out);
     out.write(this->reason_phrase.data(), this->reason_phrase.size());

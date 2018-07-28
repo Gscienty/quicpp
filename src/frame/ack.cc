@@ -23,7 +23,7 @@ quicpp::frame::ack::ack(std::basic_istream<uint8_t> &in) {
     }
 }
 
-uint8_t quicpp::frame::ack::get_type() const {
+uint8_t quicpp::frame::ack::type() const {
     return quicpp::frame::frame_type_ack;
 }
 
@@ -58,7 +58,7 @@ size_t quicpp::frame::ack::size() const {
 }
 
 void quicpp::frame::ack::encode(std::basic_ostream<uint8_t> &out) const {
-    out.put(this->get_type());
+    out.put(this->type());
     quicpp::base::varint(this->largest()).encode(out);
     quicpp::base::varint(this->delay.count()).encode(out);
     quicpp::base::varint(this->ranges.size()).encode(out);

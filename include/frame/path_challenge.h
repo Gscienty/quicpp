@@ -1,16 +1,15 @@
-#ifndef _QUICPP_FRAME_MAX_DATA_
-#define _QUICPP_FRAME_MAX_DATA_
+#ifndef _QUICPP_FRAME_PATH_CHALLENGE_
+#define _QUICPP_FRAME_PATH_CHALLENGE_
 
 #include "frame/type.h"
-#include "base/varint.h"
 
 namespace quicpp {
 namespace frame {
-class max_data : public quicpp::frame::frame {
+class path_challenge : public quicpp::frame::frame {
 private:
-    quicpp::base::varint maximum_data;
+    uint64_t data;
 public:
-    max_data(std::basic_istream<uint8_t> &in);
+    path_challenge(std::basic_istream<uint8_t> &in);
     virtual uint8_t type() const override;
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
@@ -19,4 +18,3 @@ public:
 }
 
 #endif
-

@@ -11,7 +11,7 @@ private:
     quicpp::base::varint maximum_stream_id;
 public:
     max_stream_id(std::basic_istream<uint8_t> &in);
-    virtual uint8_t get_type() const override;
+    virtual uint8_t type() const override;
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
 };

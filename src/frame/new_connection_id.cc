@@ -9,7 +9,7 @@ quicpp::frame::new_connection_id::new_connection_id(std::basic_istream<uint8_t> 
     this->reset_token = quicpp::base::reset_token(in);
 }
 
-uint8_t quicpp::frame::new_connection_id::get_type() const {
+uint8_t quicpp::frame::new_connection_id::type() const {
     return quicpp::frame::frame_type_new_connection_id;
 }
 
@@ -18,7 +18,7 @@ size_t quicpp::frame::new_connection_id::size() const {
 }
 
 void quicpp::frame::new_connection_id::encode(std::basic_ostream<uint8_t> &out) const {
-    out.put(this->get_type());
+    out.put(this->type());
     this->sequence.encode(out);
     quicpp::bigendian_encode(out, uint8_t(this->conn_id.size()));
     this->conn_id.encode(out);

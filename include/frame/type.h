@@ -20,10 +20,12 @@ const uint8_t frame_type_stream_id_blockd   = 0x0A;
 const uint8_t frame_type_new_connection_id  = 0x0B;
 const uint8_t frame_type_stop_sending       = 0x0C;
 const uint8_t frame_type_ack                = 0x0D;
+const uint8_t frame_type_path_challenge     = 0x0E;
+const uint8_t frame_type_path_response      = 0x0F;
 
 class frame : public encodable {
 public:
-    virtual uint8_t get_type() const = 0;
+    virtual uint8_t type() const = 0;
 };
 }
 }
