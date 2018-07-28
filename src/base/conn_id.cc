@@ -1,13 +1,16 @@
 #include "base/conn_id.h"
 
-quicpp::base::conn_id::conn_id() { }
+quicpp::base::conn_id::conn_id() {}
+
+quicpp::base::conn_id::conn_id(std::basic_string<uint8_t> &id)
+    : id(id) {}
 
 quicpp::base::conn_id::conn_id(std::basic_string<uint8_t> &&id)
-    : id(id) { }
+    : id(id) {}
 
 quicpp::base::conn_id::conn_id(std::basic_istream<uint8_t> &in, const size_t len) {
     this->id.resize(len);
-    in.get(const_cast<uint8_t *>(this->id.data()), len);
+    in.read(const_cast<uint8_t *>(this->id.data()), len);
 }
 
 size_t quicpp::base::conn_id::size() const {
