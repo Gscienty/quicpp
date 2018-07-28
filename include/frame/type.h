@@ -22,6 +22,7 @@ const uint8_t frame_type_stop_sending       = 0x0C;
 const uint8_t frame_type_ack                = 0x0D;
 const uint8_t frame_type_path_challenge     = 0x0E;
 const uint8_t frame_type_path_response      = 0x0F;
+const uint8_t frame_type_stream             = 0x10;
 
 class frame : public encodable {
 public:
