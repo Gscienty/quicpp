@@ -1,5 +1,8 @@
 #include "frame/new_connection_id.h"
 
+quicpp::frame::new_connection_id::new_connection_id()
+    : _sequence(0) {}
+
 quicpp::frame::new_connection_id::new_connection_id(std::basic_istream<uint8_t> &in) {
     in.seekg(1, std::ios_base::cur);
 

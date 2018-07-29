@@ -14,6 +14,7 @@ private:
     quicpp::base::conn_id _conn_id;
     quicpp::base::reset_token _reset_token;
 public:
+    new_connection_id();
     new_connection_id(std::basic_istream<uint8_t> &in);
     virtual uint8_t type() const override;
     virtual size_t size() const override;
