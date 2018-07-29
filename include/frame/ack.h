@@ -14,9 +14,10 @@ const int ack_range_smallest = 0;
 
 class ack : public quicpp::frame::frame {
 private:
-    std::chrono::duration<uint64_t, std::chrono::nanoseconds> delay;
-    std::list<std::pair<uint64_t, uint64_t>> ranges;
+    std::chrono::nanoseconds _delay;
+    std::list<std::pair<uint64_t, uint64_t>> _ranges;
 public:
+    ack();
     ack(std::basic_istream<uint8_t> &in);
 
     virtual uint8_t type() const override;
@@ -25,6 +26,9 @@ public:
 
     uint64_t largest() const;
     uint64_t smallest() const;
+
+    std::chrono::nanoseconds &delay();
+    std::list<std::pair<uint64_t, uint64_t>> &ranges();
 };
 
 }

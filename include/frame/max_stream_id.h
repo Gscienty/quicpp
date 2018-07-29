@@ -8,12 +8,14 @@ namespace quicpp {
 namespace frame {
 class max_stream_id : public quicpp::frame::frame {
 private:
-    quicpp::base::varint maximum_stream_id;
+    quicpp::base::varint _maximum_stream_id;
 public:
+    max_stream_id();
     max_stream_id(std::basic_istream<uint8_t> &in);
     virtual uint8_t type() const override;
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
+    quicpp::base::varint &maximum_stream_id();
 };
 }
 }

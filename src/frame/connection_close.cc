@@ -1,12 +1,15 @@
 #include "frame/connection_close.h"
 #include "base/varint.h"
 
+quicpp::frame::connection_close::connection_close()
+    : _error_code(0) {}
+
 quicpp::frame::connection_close::connection_close(std::basic_istream<uint8_t> &in) {
     in.seekg(1, std::ios_base::cur);
-    this->error_code = quicpp::bigendian_decode<uint16_t>(in);
+    this->_error_code = quicpp::bigendian_decode<uint16_t>(in);
     quicpp::base::varint reason_phrase_length(in);
-    this->reason_phrase.resize(reason_phrase_length.get_value());
-    in.get(const_cast<uint8_t *>(this->reason_phrase.data()), reason_phrase_length.get_value());
+    this->_reason_phrase.resize(reason_phrase_length.value());
+    in.get(const_cast<uint8_t *>(this->_reason_phrase.data()), reason_phrase_length.value());
 }
 
 uint8_t quicpp::frame::connection_close::type() const {
@@ -14,13 +17,21 @@ uint8_t quicpp::frame::connection_close::type() const {
 }
 
 size_t quicpp::frame::connection_close::size() const {
-    size_t reason_phrase_length = this->reason_phrase.size();
+    size_t reason_phrase_length = this->_reason_phrase.size();
     return 1 + 2 + quicpp::base::varint(uint64_t(reason_phrase_length)).size() + reason_phrase_length;
 }
 
 void quicpp::frame::connection_close::encode(std::basic_ostream<uint8_t> &out) const {
     out.put(this->type());
-    quicpp::bigendian_encode(out, this->error_code);
-    quicpp::base::varint(this->reason_phrase.size()).encode(out);
-    out.write(this->reason_phrase.data(), this->reason_phrase.size());
+    quicpp::bigendian_encode(out, this->_error_code);
+    quicpp::base::varint(this->_reason_phrase.size()).encode(out);
+    out.write(this->_reason_phrase.data(), this->_reason_phrase.size());
+}
+
+uint16_t &quicpp::frame::connection_close::error() {
+    return this->_error_code;
+}
+
+std::basic_string<uint8_t> &quicpp::frame::connection_close::reason_phrase() {
+    return this->_reason_phrase;
 }
