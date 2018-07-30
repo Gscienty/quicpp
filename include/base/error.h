@@ -28,6 +28,7 @@ namespace error {
 
 const quicpp::base::error_t success(0);
 const quicpp::base::error_t flowcontrol_recv_too_much_data(1000);
+const quicpp::base::error_t stream_data_after_termination(1001);
 
 }
 }
