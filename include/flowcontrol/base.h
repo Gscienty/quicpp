@@ -25,8 +25,9 @@ protected:
 
     std::chrono::system_clock::time_point epoch_start_time;
     uint64_t epoch_start_offset;
-    quicpp::congestion::rtt rtt;
+    quicpp::congestion::rtt& rtt;
 public:
+    base(uint64_t rwnd, uint64_t max_rwnd, quicpp::congestion::rtt &);
     virtual uint64_t send_window() const = 0;
     uint64_t _send_window() const;
     void send_window(const uint64_t &);
