@@ -9,7 +9,7 @@ quicpp::frame::application_close::application_close(std::basic_istream<uint8_t> 
     this->_error_code = quicpp::bigendian_decode<uint16_t>(in);
     quicpp::base::varint reason_phrase_length(in);
     this->_reason_phrase.resize(reason_phrase_length.value());
-    in.get(const_cast<uint8_t *>(this->_reason_phrase.data()), reason_phrase_length.value());
+    in.read(const_cast<uint8_t *>(this->_reason_phrase.data()), reason_phrase_length.value());
 }
 
 uint8_t quicpp::frame::application_close::type() const {

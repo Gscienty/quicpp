@@ -29,6 +29,10 @@ public:
 
     std::chrono::nanoseconds &delay();
     std::list<std::pair<uint64_t, uint64_t>> &ranges();
+
+    bool has_missing_ranges() const;
+
+
 };
 
 }

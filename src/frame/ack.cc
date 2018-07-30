@@ -64,7 +64,7 @@ void quicpp::frame::ack::encode(std::basic_ostream<uint8_t> &out) const {
     out.put(this->type());
     quicpp::base::varint(this->largest()).encode(out);
     quicpp::base::varint(this->_delay.count()).encode(out);
-    quicpp::base::varint(this->_ranges.size()).encode(out);
+    quicpp::base::varint(this->_ranges.size() - 1).encode(out);
 
     auto begin = this->_ranges.begin();
     uint64_t smallest = std::get<quicpp::frame::ack_range_smallest>(*begin);
@@ -100,4 +100,8 @@ std::chrono::nanoseconds &quicpp::frame::ack::delay() {
 
 std::list<std::pair<uint64_t, uint64_t>> &quicpp::frame::ack::ranges() {
     return this->_ranges;
+}
+
+bool quicpp::frame::ack::has_missing_ranges() const {
+    return this->_ranges.size() > 1;
 }
