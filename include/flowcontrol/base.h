@@ -31,10 +31,11 @@ protected:
     uint64_t _update();
 public:
     base(uint64_t rwnd, uint64_t max_rwnd, quicpp::congestion::rtt &);
+    base(uint64_t rwnd, uint64_t max_rwnd, uint64_t swnd, quicpp::congestion::rtt &);
     virtual uint64_t send_window() const = 0;
     void send_window(const uint64_t &);
-    void sent(const uint64_t &);
-    void read(const uint64_t &);
+    virtual void sent(const uint64_t &);
+    virtual void read(const uint64_t &);
     virtual uint64_t update() = 0;
     bool has_update() const;
     virtual void maybe_update() = 0;
