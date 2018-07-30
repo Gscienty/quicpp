@@ -15,6 +15,19 @@ quicpp::flowcontrol::base::base(uint64_t rwnd, uint64_t max_rwnd, quicpp::conges
     , epoch_start_offset(0)
     , rtt(rtt) {}
 
+quicpp::flowcontrol::base::base(uint64_t rwnd, uint64_t max_rwnd, uint64_t swnd, quicpp::congestion::rtt &rtt)
+    : sent_bytes(0)
+    , swnd(swnd)
+    , last_blocked_at(0)
+    , read_bytes(0)
+    , highest_received(0)
+    , rwnd(rwnd)
+    , rwnd_size(rwnd)
+    , max_rwnd_size(max_rwnd)
+    , epoch_start_time(std::chrono::system_clock::now())
+    , epoch_start_offset(0)
+    , rtt(rtt)  {}
+
 std::pair<bool, uint64_t> quicpp::flowcontrol::base::is_newly_blocked() {
     if (this->send_window() != 0 || this->swnd == this->last_blocked_at) {
         return std::make_pair(false, 0);
