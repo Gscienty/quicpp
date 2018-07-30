@@ -10,7 +10,7 @@ class error_t {
 private:
     uint64_t sign;
 public:
-    error(uint64_t sign) : sign(sign) {}
+    error_t(uint64_t sign) : sign(sign) {}
 
     bool operator== (const quicpp::base::error_t &err) {
         return this->sign == err.sign;
@@ -20,6 +20,14 @@ public:
         return this->sign != err.sign;
     }
 };
+}
+}
+
+namespace quicpp {
+namespace error {
+
+const quicpp::base::error_t success(0);
+const quicpp::base::error_t flowcontrol_recv_too_much_data(1000);
 
 }
 }
