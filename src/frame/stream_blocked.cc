@@ -6,7 +6,7 @@ quicpp::frame::stream_blocked::stream_blocked()
 
 quicpp::frame::stream_blocked::stream_blocked(std::basic_istream<uint8_t> &in) {
     in.seekg(1, std::ios_base::cur);
-    this->_stream_id = quicpp::base::varint(in);
+    this->_stream_id = quicpp::base::stream_id_t(in);
     this->_offset = quicpp::base::varint(in);
 }
 
@@ -24,7 +24,7 @@ void quicpp::frame::stream_blocked::encode(std::basic_ostream<uint8_t> &out) con
     this->_offset.encode(out);
 }
 
-quicpp::base::varint &quicpp::frame::stream_blocked::stream_id() {
+quicpp::base::stream_id_t &quicpp::frame::stream_blocked::stream_id() {
     return this->_stream_id;
 }
 

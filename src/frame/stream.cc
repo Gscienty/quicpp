@@ -14,7 +14,7 @@ quicpp::frame::stream::stream(std::basic_istream<uint8_t> &in) {
     this->_len_flag = (first_byte & 0x02) != 0;
     this->_final_flag = (first_byte & 0x01) != 0;
 
-    this->_stream_id = quicpp::base::varint(in);
+    this->_stream_id = quicpp::base::stream_id_t(in);
     if (this->_offset_flag) {
         this->_offset = quicpp::base::varint(in);
     }
@@ -76,7 +76,7 @@ bool &quicpp::frame::stream::final_flag() {
     return this->_final_flag;
 }
 
-quicpp::base::varint &quicpp::frame::stream::stream_id() {
+quicpp::base::stream_id_t &quicpp::frame::stream::stream_id() {
     return this->_stream_id;
 }
 

@@ -7,7 +7,7 @@ quicpp::frame::rst::rst()
 
 quicpp::frame::rst::rst(std::basic_istream<uint8_t> &in) {
     in.seekg(1, std::ios_base::cur);
-    this->_stream_id = quicpp::base::varint(in);
+    this->_stream_id = quicpp::base::stream_id_t(in);
     this->_application_error_code = quicpp::bigendian_decode<uint16_t>(in);
     this->_final_offset = quicpp::base::varint(in);
 }
@@ -27,7 +27,7 @@ void quicpp::frame::rst::encode(std::basic_ostream<uint8_t> &out) const {
     this->_final_offset.encode(out);
 }
 
-quicpp::base::varint &quicpp::frame::rst::stream_id() {
+quicpp::base::stream_id_t &quicpp::frame::rst::stream_id() {
     return this->_stream_id;
 }
 

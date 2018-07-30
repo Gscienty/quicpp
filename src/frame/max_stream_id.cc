@@ -5,7 +5,7 @@ quicpp::frame::max_stream_id::max_stream_id()
 
 quicpp::frame::max_stream_id::max_stream_id(std::basic_istream<uint8_t> &in) {
     in.seekg(1, std::ios_base::cur);
-    this->_maximum_stream_id = quicpp::base::varint(in);
+    this->_maximum_stream_id = quicpp::base::stream_id_t(in);
 }
 
 uint8_t quicpp::frame::max_stream_id::type() const {
@@ -21,6 +21,6 @@ void quicpp::frame::max_stream_id::encode(std::basic_ostream<uint8_t> &out) cons
     this->_maximum_stream_id.encode(out);
 }
 
-quicpp::base::varint &quicpp::frame::max_stream_id::maximum_stream_id() {
+quicpp::base::stream_id_t &quicpp::frame::max_stream_id::maximum_stream_id() {
     return this->_maximum_stream_id;
 }

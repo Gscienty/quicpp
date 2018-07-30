@@ -2,13 +2,13 @@
 #define _QUICPP_FRAME_STOP_SENDING_
 
 #include "frame/type.h"
-#include "base/varint.h"
+#include "base/stream_id_t.h"
 
 namespace quicpp {
 namespace frame {
 class stop_sending : public quicpp::frame::frame {
 private:
-    quicpp::base::varint _stream_id;
+    quicpp::base::stream_id_t _stream_id;
     uint16_t _application_error_code;
 public:
     stop_sending();
@@ -17,7 +17,7 @@ public:
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
 
-    quicpp::base::varint &stream_id();
+    quicpp::base::stream_id_t &stream_id();
     uint16_t &application_error_code();
 };
 }
