@@ -4,7 +4,7 @@
 #include "base/conn_id.h"
 #include "base/varint.h"
 #include "encodable.h"
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace quicpp {

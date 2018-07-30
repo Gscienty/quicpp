@@ -3,7 +3,7 @@
 
 #include <ostream>
 #include <istream>
-#include <stdint.h>
+#include <cstdint>
 
 namespace quicpp {
 class encodable {
