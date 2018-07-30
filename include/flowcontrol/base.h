@@ -26,15 +26,16 @@ protected:
     std::chrono::system_clock::time_point epoch_start_time;
     uint64_t epoch_start_offset;
     quicpp::congestion::rtt& rtt;
+
+    uint64_t _send_window() const;
+    uint64_t _update();
 public:
     base(uint64_t rwnd, uint64_t max_rwnd, quicpp::congestion::rtt &);
     virtual uint64_t send_window() const = 0;
-    uint64_t _send_window() const;
     void send_window(const uint64_t &);
     void sent(const uint64_t &);
     void read(const uint64_t &);
     virtual uint64_t update() = 0;
-    uint64_t _update();
     bool has_update() const;
     virtual void maybe_update() = 0;
     void maybe_adjust_window();
