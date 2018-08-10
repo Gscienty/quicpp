@@ -87,7 +87,7 @@ void quicpp::flowcontrol::stream::maybe_update() {
     }
 
     if (this->contributes_to_connection) {
-        this->connection.base::maybe_update();
+        this->connection.maybe_update();
     }
 }
 
