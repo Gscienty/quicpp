@@ -11,7 +11,7 @@ namespace quicpp {
 namespace flowcontrol {
 
 class stream : public quicpp::flowcontrol::base {
-private:
+protected:
     quicpp::base::stream_id_t stream_id;
     std::function<void ()> update_func;
     std::function<void (const quicpp::base::stream_id_t &)> _update_func;
