@@ -80,10 +80,10 @@ public:
     bool is_cwnd_limited(const uint64_t bytes_inflight);
     quicpp::congestion::slow_start &slow_start();
     uint64_t bandwidth_estimate();
-    void set_num_emulated_connections(int n);
-    void on_retransmission_timeout(bool packets_retransmitted);
-    void on_connection_migration();
-    void set_slowstart_large_reduction(bool enable);
+    virtual void set_num_emulated_connections(int n) override;
+    virtual void on_retransmission_timeout(bool packets_retransmitted) override;
+    virtual void on_connection_migration() override;
+    virtual void set_slowstart_large_reduction(bool enable) override;
 };
 
 }

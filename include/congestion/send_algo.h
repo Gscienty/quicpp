@@ -32,6 +32,11 @@ class send_algo {
     on_packet_lost(const uint64_t pn,
                    const uint64_t lost_bytes,
                    const uint64_t prior_inflight) = 0;
+
+    virtual void set_num_emulated_connections(int n) = 0;
+    virtual void on_retransmission_timeout(bool packets_retransmitted) = 0;
+    virtual void on_connection_migration() = 0;
+    virtual void set_slowstart_large_reduction(bool enabled) = 0;
 };
 }
 
