@@ -166,3 +166,42 @@ quicpp::congestion::cubic_sender::is_cwnd_limited(const uint64_t bytes_inflight)
     return slowstart_limited || 
         available_bytes <= quicpp::congestion::max_burst_bytes;
 }
+
+void
+quicpp::congestion::cubic_sender::set_num_emulated_connections(int n) {
+    this->num_conns = std::max(1, n);
+    this->cubic.num_connections() = this->num_conns;
+}
+
+void
+quicpp::congestion::cubic_sender::
+on_retransmission_timeout(bool packets_retransmitted) {
+    this->largest_sent_at_last_cutback = 0;
+    if (!packets_retransmitted) {
+        return;
+    }
+    this->_slow_start.restart();
+    this->cubic.reset();
+    this->_slowstart_threhold = this->_cwnd / 2;
+    this->_cwnd = this->min_cwnd;
+}
+
+void quicpp::congestion::cubic_sender::on_connection_migration() {
+    this->_slow_start.restart();
+    this->prr.init();
+    this->largest_sent_pn = 0;
+    this->largest_acked_pn = 0;
+    this->largest_sent_at_last_cutback = 0;
+    this->last_cutback_exited_slowstart = false;
+    this->cubic.reset();
+    this->num_acked_packets = 0;
+    this->_cwnd = this->initial_cwnd;
+    this->_slow_start = this->initial_max_cwnd;
+    this->max_cwnd = this->initial_max_cwnd;
+}
+
+void
+quicpp::congestion::cubic_sender::
+set_slowstart_large_reduction(bool enable) {
+    this->slowstart_large_reduction = enable;
+}

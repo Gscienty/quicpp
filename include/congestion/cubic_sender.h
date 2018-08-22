@@ -6,6 +6,7 @@
 #include "congestion/prr.h"
 #include "congestion/slow_start.h"
 #include "congestion/cubic.h"
+#include "congestion/send_algo.h"
 #include "params.h"
 #include <chrono>
 
@@ -15,7 +16,7 @@ namespace congestion {
 const uint64_t max_burst_bytes = 3 * quicpp::default_tcp_mss;
 const uint64_t default_min_cwnd = 2 * quicpp::default_tcp_mss;
 
-class cubic_sender {
+class cubic_sender : public quicpp::congestion::send_algo {
 private:
     quicpp::congestion::slow_start _slow_start;
     quicpp::congestion::prr prr;
@@ -42,29 +43,47 @@ public:
     cubic_sender(quicpp::congestion::rtt &rtt,
                  const uint64_t cwnd,
                  const uint64_t max_cwnd);
-    std::chrono::microseconds time_until_send(const uint64_t bytes_inflight);
-    void on_packet_sent(const uint64_t pn,
-                        const uint64_t bytes,
-                        const bool is_retransmittable);
+
+    virtual
+    std::chrono::microseconds 
+    time_until_send(const uint64_t bytes_inflight) override;
+    
+    virtual
+    void 
+    on_packet_sent(const uint64_t pn,
+                   const uint64_t bytes,
+                   const bool is_retransmittable) override;
+
     bool in_recovery() const;
     bool in_slowstart() const;
-    uint64_t &cwnd();
+    virtual uint64_t &cwnd() override;
     uint64_t &slowstart_threhold();
     void exit_slowstart();
-    void maybe_exit_slowstart();
-    void on_packet_acked(const uint64_t acked_pn,
-                         const uint64_t acked_bytes,
-                         const uint64_t prior_inflight,
-                         const std::chrono::system_clock::time_point event_time);
-    void on_packet_lost(const uint64_t pn,
-                        const uint64_t lost_bytes,
-                        const uint64_t prior_inflight);
+    virtual void maybe_exit_slowstart() override;
+
+    virtual
+    void
+    on_packet_acked(const uint64_t acked_pn,
+                    const uint64_t acked_bytes,
+                    const uint64_t prior_inflight,
+                    const std::chrono::system_clock::time_point event_time) override;
+
+    virtual
+    void 
+    on_packet_lost(const uint64_t pn,
+                   const uint64_t lost_bytes,
+                   const uint64_t prior_inflight) override;
+
     void maybe_increase_cwnd(const uint64_t acked_bytes,
                              const uint64_t prior_inflight,
                              const std::chrono::system_clock::time_point event_time);
     bool is_cwnd_limited(const uint64_t bytes_inflight);
     quicpp::congestion::slow_start &slow_start();
     uint64_t bandwidth_estimate();
+    void set_num_emulated_connections(int n);
+    void on_retransmission_timeout(bool packets_retransmitted);
+    void on_connection_migration();
+    void set_slowstart_large_reduction(bool enable);
 };
 
 }

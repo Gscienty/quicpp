@@ -19,6 +19,7 @@ public:
     bool can_send(const uint64_t cwnd,
                   const uint64_t inflight,
                   const uint64_t slowstart_threhold);
+    void init();
 };
 
 }

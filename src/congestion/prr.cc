@@ -33,3 +33,9 @@ bool quicpp::congestion::prr::can_send(const uint64_t cwnd,
         this->sent_since_loss * this->inflight_since_loss;
 }
 
+void quicpp::congestion::prr::init() {
+    this->sent_since_loss = 0;
+    this->delivered_since_loss = 0;
+    this->ack_count_since_loss = 0;
+    this->inflight_since_loss = 0;
+}
