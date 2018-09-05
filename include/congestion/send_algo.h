@@ -7,6 +7,7 @@ namespace quicpp {
 namespace congestion {
 
 class send_algo {
+public:
     virtual
     std::chrono::microseconds 
     time_until_send(const uint64_t bytes_inflight) = 0;
@@ -37,7 +38,10 @@ class send_algo {
     virtual void on_retransmission_timeout(bool packets_retransmitted) = 0;
     virtual void on_connection_migration() = 0;
     virtual void set_slowstart_large_reduction(bool enabled) = 0;
+
+    virtual ~send_algo() {}
 };
+}
 }
 
 #endif
