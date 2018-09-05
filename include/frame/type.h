@@ -27,6 +27,7 @@ const uint8_t frame_type_stream             = 0x10;
 class frame : public encodable {
 public:
     virtual uint8_t type() const = 0;
+    virtual ~frame() {}
 };
 }
 }
