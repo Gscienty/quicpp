@@ -22,16 +22,17 @@ public:
     }
 };
 }
-}
 
-namespace quicpp {
 namespace error {
 
 const quicpp::base::error_t success(0);
+const quicpp::base::error_t bug(1);
 const quicpp::base::error_t flowcontrol_recv_too_much_data(1000);
 const quicpp::base::error_t stream_data_after_termination(1001);
 const quicpp::base::error_t packet_not_found(2000);
 const quicpp::base::error_t num_outstanding_handshake_packets_negative(2001);
+const quicpp::base::error_t invalid_ack_data(3000);
+const quicpp::base::error_t encryption_level_not_equal(3001);
 
 }
 }
