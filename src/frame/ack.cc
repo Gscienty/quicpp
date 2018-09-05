@@ -98,10 +98,34 @@ std::chrono::nanoseconds &quicpp::frame::ack::delay() {
     return this->_delay;
 }
 
-std::list<std::pair<uint64_t, uint64_t>> &quicpp::frame::ack::ranges() {
+std::vector<std::pair<uint64_t, uint64_t>> &quicpp::frame::ack::ranges() {
     return this->_ranges;
 }
 
 bool quicpp::frame::ack::has_missing_ranges() const {
     return this->_ranges.size() > 1;
+}
+
+bool quicpp::frame::ack::acks_packet(uint64_t p) {
+    if (p < this->smallest() || p > this->largest()) {
+        return false;
+    }
+
+    int i = 0;
+    int j = this->_ranges.size();
+
+    std::function<bool (int)> search_func = [&] (int i) -> bool {
+        return p >= std::get<quicpp::frame::ack_range_smallest>(this->_ranges[i]);
+    };
+    while (i < j) {
+        int h = i + (j - i) / 2;
+        if (!search_func(h)) {
+            i = h + 1;
+        }
+        else {
+            j = h;
+        }
+    }
+
+    return p <= std::get<quicpp::frame::ack_range_largest>(this->_ranges[i]);
 }

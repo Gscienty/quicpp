@@ -4,7 +4,7 @@
 #include "frame/type.h"
 #include <chrono>
 #include <utility>
-#include <list>
+#include <vector>
 
 namespace quicpp {
 namespace frame {
@@ -15,7 +15,7 @@ const int ack_range_smallest = 0;
 class ack : public quicpp::frame::frame {
 private:
     std::chrono::nanoseconds _delay;
-    std::list<std::pair<uint64_t, uint64_t>> _ranges;
+    std::vector<std::pair<uint64_t, uint64_t>> _ranges;
 public:
     ack();
     ack(std::basic_istream<uint8_t> &in);
@@ -28,11 +28,11 @@ public:
     uint64_t smallest() const;
 
     std::chrono::nanoseconds &delay();
-    std::list<std::pair<uint64_t, uint64_t>> &ranges();
+    std::vector<std::pair<uint64_t, uint64_t>> &ranges();
 
     bool has_missing_ranges() const;
 
-
+    bool acks_packet(uint64_t p);
 };
 
 }
