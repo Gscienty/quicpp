@@ -196,7 +196,7 @@ void quicpp::congestion::cubic_sender::on_connection_migration() {
     this->cubic.reset();
     this->num_acked_packets = 0;
     this->_cwnd = this->initial_cwnd;
-    this->_slow_start = this->initial_max_cwnd;
+    this->_slowstart_threhold = this->initial_max_cwnd;
     this->max_cwnd = this->initial_max_cwnd;
 }
 
