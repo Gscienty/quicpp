@@ -29,6 +29,7 @@ private:
     uint64_t last_target_cwnd;
 public:
     cubic();
+    uint64_t &last_max_congestion_window() { return this->last_max_cwnd; }
     void reset();
     double alpha() const;
     double beta() const;
