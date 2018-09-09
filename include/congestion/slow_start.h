@@ -22,6 +22,7 @@ private:
     uint32_t rtt_sample_count;
     bool hystart_found;
 public:
+    slow_start();
     void start_receive_round(const uint64_t last_sent);
     bool is_end_of_round(const uint64_t ack) const;
     bool should_exist_slowstart(const std::chrono::microseconds latest_rtt,

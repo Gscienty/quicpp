@@ -1,6 +1,14 @@
 #include "congestion/slow_start.h"
 #include <algorithm>
 
+quicpp::congestion::slow_start::slow_start()
+    : end_pn(0)
+    , last_sent_pn(0)
+    , started(false)
+    , current_min_rtt(std::chrono::microseconds::zero())
+    , rtt_sample_count(0)
+    , hystart_found(false) {}
+
 void
 quicpp::congestion::slow_start::
 start_receive_round(const uint64_t last_sent) {
