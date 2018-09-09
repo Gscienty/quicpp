@@ -131,6 +131,140 @@ TEST(cubic, works_above_origin2) {
     }
 }
 
+TEST(cubic, handles_per_ack_updates) {
+    using namespace quicpp::congestion;
+
+    cubic _cubic;
+
+    int initial_cwnd_packets = 150;
+    uint64_t current_cwnd(initial_cwnd_packets * quicpp::default_tcp_mss);
+    std::chrono::milliseconds rtt_min(350);
+    std::chrono::system_clock::time_point _clock = 
+        std::chrono::system_clock::now();
+
+    _clock += std::chrono::milliseconds(1);
+    uint64_t r_cwnd = reno_cwnd(current_cwnd);
+    current_cwnd = _cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                         current_cwnd,
+                                         rtt_min,
+                                         _clock);
+    uint64_t initial_cwnd = current_cwnd;
+
+    int max_acks = int(double(initial_cwnd_packets) / n_conn_alpha);
+    int interval = max_cubic_time_interval / std::chrono::milliseconds(max_acks + 1);
+
+    _clock += std::chrono::milliseconds(interval);
+    r_cwnd = reno_cwnd(r_cwnd);
+
+    EXPECT_EQ(current_cwnd,
+              _cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                    current_cwnd,
+                                    rtt_min,
+                                    _clock));
+
+    for (int i = 1; i < max_acks; i++) {
+        _clock += std::chrono::milliseconds(interval);
+
+        uint64_t next_cwnd = _cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                                   current_cwnd,
+                                                   rtt_min,
+                                                   _clock);
+        r_cwnd = reno_cwnd(r_cwnd);
+
+        EXPECT_GT(next_cwnd, current_cwnd);
+        EXPECT_EQ(next_cwnd, r_cwnd);
+        current_cwnd = next_cwnd;
+    }
+
+    uint64_t minimum_expected_increase = quicpp::default_tcp_mss * 9 / 10;
+    EXPECT_GT(current_cwnd, initial_cwnd + minimum_expected_increase);
+}
+
+TEST(cubic, handles_loss_events) {
+    using namespace quicpp::congestion;
+
+    cubic _cubic;
+
+    std::chrono::milliseconds rtt_min(100);
+    uint64_t current_cwnd = 422 * quicpp::default_tcp_mss;
+    uint64_t expected_cwnd = reno_cwnd(current_cwnd);
+
+    std::chrono::system_clock::time_point _clock = 
+        std::chrono::system_clock::now();
+
+    _clock += std::chrono::milliseconds(1);
+    EXPECT_EQ(_cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                    current_cwnd,
+                                    rtt_min,
+                                    _clock),
+              expected_cwnd);
+
+    uint64_t pre_loss_cwnd = current_cwnd;
+    EXPECT_EQ(_cubic.last_max_congestion_window(), 0);
+    expected_cwnd = uint64_t(double(current_cwnd) * n_conn_beta);
+    EXPECT_EQ(_cubic.cwnd_after_packet_loss(current_cwnd), expected_cwnd);
+    EXPECT_EQ(_cubic.last_max_congestion_window(), pre_loss_cwnd);
+
+    current_cwnd = expected_cwnd;
+
+    pre_loss_cwnd = current_cwnd;
+    expected_cwnd = uint64_t(double(current_cwnd) * n_conn_beta);
+    EXPECT_EQ(_cubic.cwnd_after_packet_loss(current_cwnd), expected_cwnd);
+    current_cwnd = expected_cwnd;
+    EXPECT_GT(pre_loss_cwnd, _cubic.last_max_congestion_window());
+    uint64_t expected_last_max = uint64_t(double(pre_loss_cwnd) * n_conn_beta_last_max);
+    EXPECT_EQ(_cubic.last_max_congestion_window(), expected_last_max);
+    EXPECT_LT(expected_cwnd, _cubic.last_max_congestion_window());
+    current_cwnd = _cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                         current_cwnd,
+                                         rtt_min,
+                                         _clock);
+    EXPECT_GT(_cubic.last_max_congestion_window(), current_cwnd);
+
+    current_cwnd = _cubic.last_max_congestion_window() - 1;
+    pre_loss_cwnd = current_cwnd;
+    expected_cwnd = uint64_t(double(current_cwnd) * n_conn_beta);
+    EXPECT_EQ(_cubic.cwnd_after_packet_loss(current_cwnd), expected_cwnd);
+    expected_last_max = pre_loss_cwnd;
+    EXPECT_EQ(_cubic.last_max_congestion_window(), expected_last_max);
+}
+
+TEST(cubic, works_below_origin) {
+    using namespace quicpp::congestion;
+    cubic _cubic;
+
+    std::chrono::milliseconds rtt_min(100);
+    uint64_t current_cwnd = 422 * quicpp::default_tcp_mss;
+    uint64_t expected_cwnd = reno_cwnd(current_cwnd);
+    std::chrono::system_clock::time_point _clock =
+        std::chrono::system_clock::now();
+    _clock += std::chrono::milliseconds(1);
+
+    EXPECT_EQ(_cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                    current_cwnd,
+                                    rtt_min,
+                                    _clock),
+              expected_cwnd);
+
+    expected_cwnd = uint64_t(double(current_cwnd) * n_conn_beta);
+    EXPECT_EQ(_cubic.cwnd_after_packet_loss(current_cwnd), expected_cwnd);
+    current_cwnd = expected_cwnd;
+    current_cwnd = _cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                         current_cwnd,
+                                         rtt_min,
+                                         _clock);
+    for (int i = 0; i < 40; i++) {
+        _clock += std::chrono::milliseconds(100);
+        current_cwnd = _cubic.cwnd_after_ack(quicpp::default_tcp_mss,
+                                             current_cwnd,
+                                             rtt_min,
+                                             _clock);
+    }
+
+    expected_cwnd = 553632;
+    EXPECT_EQ(current_cwnd, expected_cwnd);
+}
+
 int main() {
     return RUN_ALL_TESTS();
 }
