@@ -1,4 +1,5 @@
 #include "congestion/cubic.h"
+#include <iostream>
 #include <algorithm>
 
 quicpp::congestion::cubic::cubic()
@@ -22,7 +23,7 @@ double quicpp::congestion::cubic::alpha() const {
 }
 
 double quicpp::congestion::cubic::beta() const {
-    return (double(this->num_conns) - 1 + quicpp::congestion::beta) / 
+    return (double(this->num_conns) - 1 + quicpp::congestion::_beta) / 
         double(this->num_conns);
 }
 
@@ -74,11 +75,11 @@ cwnd_after_ack(const uint64_t acked_bytes,
         }
     }
 
-    int64_t elapsed_time(std::chrono::duration_cast<std::chrono::microseconds>(
-                         event_time + delay_min - this->epoch).count() <<
-                         10 / (1000 * 1000));
+    int64_t elapsed_time((std::chrono::duration_cast<std::chrono::microseconds>(
+                         event_time + delay_min - this->epoch).count() << 10) /
+                         (1000 * 1000));
+    
     int64_t offset = std::abs(int64_t(this->time_to_origin_point) - elapsed_time);
-
     uint64_t delta_cwnd = uint64_t(cube_cwnd_scale * offset * offset * offset) *
         quicpp::default_tcp_mss >> cube_scale;
     uint64_t target_cwnd;
@@ -96,8 +97,8 @@ cwnd_after_ack(const uint64_t acked_bytes,
                  this->alpha() *
                  double(quicpp::default_tcp_mss) /
                  double(this->estimated_tcp_cwnd));
-    this->acked_bytes_count = 0;
 
+    this->acked_bytes_count = 0;
     this->last_target_cwnd = target_cwnd;
 
     if (target_cwnd < this->estimated_tcp_cwnd) {
