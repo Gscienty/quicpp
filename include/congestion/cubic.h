@@ -13,7 +13,7 @@ const int cube_cwnd_scale = 410;
 const uint64_t cube_factor = 1 <<
     cube_scale / cube_cwnd_scale / quicpp::default_tcp_mss;
 const int default_num_conns = 2;
-const double beta = 0.7;
+const double _beta = 0.7;
 const double beta_last_max = 0.85;
 
 
