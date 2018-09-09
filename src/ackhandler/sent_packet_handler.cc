@@ -532,7 +532,7 @@ quicpp::ackhandler::sent_packet_handler::queue_rtos() {
         auto p = this->packet_history.first_outstanding();
         if (p != nullptr) {
             quicpp::base::error_t err =
-                this->queue_packet_for_retransmission(*p);
+                this->queue_packet_for_retransmission(p);
             if (err == quicpp::error::success) {
                 return err;
             }
