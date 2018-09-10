@@ -5,6 +5,7 @@
 #include <list>
 #include <utility>
 #include <cstdint>
+#include <vector>
 
 namespace quicpp {
 namespace ackhandler {
@@ -18,6 +19,9 @@ private:
     uint64_t lowest_in_received_packet_numbers;
 public:
     quicpp::base::error_t received_packet(uint64_t p);
+    void delete_below(uint64_t p);
+    std::vector<std::pair<uint64_t, uint64_t>> get_ack_ranges();
+    std::pair<uint64_t, uint64_t> get_highest_ack_range();
 };
 
 }
