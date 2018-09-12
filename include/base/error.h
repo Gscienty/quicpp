@@ -33,6 +33,9 @@ const quicpp::base::error_t packet_not_found(2000);
 const quicpp::base::error_t num_outstanding_handshake_packets_negative(2001);
 const quicpp::base::error_t invalid_ack_data(3000);
 const quicpp::base::error_t encryption_level_not_equal(3001);
+const quicpp::base::error_t too_many_outstanding_received_ack_ranges(3002);
+const quicpp::base::error_t duplicate_stream_data(4000);
+const quicpp::base::error_t too_many_gaps_in_received_stream_data(4001);
 
 }
 }
