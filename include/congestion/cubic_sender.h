@@ -13,6 +13,11 @@
 namespace quicpp {
 namespace congestion {
 
+inline uint64_t __inl_bandwidth_from_delta(uint64_t bytes,
+                                    std::chrono::microseconds delta) {
+    return bytes * std::chrono::seconds(1) / delta * 8;
+}
+
 const uint64_t max_burst_bytes = 3 * quicpp::default_tcp_mss;
 const uint64_t default_min_cwnd = 2 * quicpp::default_tcp_mss;
 

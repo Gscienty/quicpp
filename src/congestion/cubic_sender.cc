@@ -5,13 +5,20 @@ quicpp::congestion::cubic_sender::cubic_sender(quicpp::congestion::rtt &rtt,
                                                const uint64_t cwnd,
                                                const uint64_t max_cwnd)
     : rtt(rtt)
+    , largest_sent_pn(0)
+    , largest_acked_pn(0)
+    , largest_sent_at_last_cutback(0)
+    , last_cutback_exited_slowstart(false)
+    , slowstart_large_reduction(false)
     , _cwnd(cwnd)
     , min_cwnd(quicpp::congestion::default_min_cwnd)
     , max_cwnd(max_cwnd)
     , _slowstart_threhold(max_cwnd)
     , num_conns(quicpp::congestion::default_num_conns)
+    , num_acked_packets(0)
     , initial_cwnd(cwnd)
-    , initial_max_cwnd(cwnd) {}
+    , initial_max_cwnd(cwnd)
+    , min_slowstart_exit_wnd(0) {}
 
 
 std::chrono::microseconds
@@ -204,4 +211,13 @@ void
 quicpp::congestion::cubic_sender::
 set_slowstart_large_reduction(bool enable) {
     this->slowstart_large_reduction = enable;
+}
+
+
+uint64_t quicpp::congestion::cubic_sender::bandwidth_estimate() {
+    std::chrono::microseconds srtt = this->rtt.smoothed();
+    if (srtt == std::chrono::microseconds::zero()) {
+        return 0;
+    }
+    return __inl_bandwidth_from_delta(this->cwnd(), srtt);
 }
