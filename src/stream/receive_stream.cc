@@ -84,13 +84,13 @@ quicpp::stream::receive_stream::read_implement(uint8_t *buffer_ptr, size_t size)
         if (bytes_read > size) {
             return std::make_tuple(false, bytes_read, quicpp::error::bug);
         }
-        if (this->readpos_in_frame > static_cast<ssize_t>(frame->len())) {
+        if (this->readpos_in_frame > static_cast<ssize_t>(frame->data().size())) {
             return std::make_tuple(false, bytes_read, quicpp::error::bug);
         }
 
         locker.unlock();
         ssize_t copy_size = std::min(size - bytes_read,
-                                     frame->len() - this->readpos_in_frame);
+                                     frame->data().size() - this->readpos_in_frame);
         std::copy_n(frame->data().begin() + this->readpos_in_frame,
                     copy_size,
                     buffer_ptr + bytes_read);
@@ -105,7 +105,7 @@ quicpp::stream::receive_stream::read_implement(uint8_t *buffer_ptr, size_t size)
         }
         this->flowcontrol.maybe_update();
 
-        if (this->readpos_in_frame >= static_cast<ssize_t>(frame->len())) {
+        if (this->readpos_in_frame >= static_cast<ssize_t>(frame->data().size())) {
             this->frame_queue.pop();
             this->fin_read = frame->final_flag();
             delete frame;
@@ -197,7 +197,7 @@ handle_rst_frame_implement(quicpp::frame::rst *frame) {
 quicpp::base::error_t
 quicpp::stream::receive_stream::
 handle_stream_frame(quicpp::frame::stream *frame) {
-    uint64_t max_offset = frame->offset() + frame->len();
+    uint64_t max_offset = frame->offset() + frame->data().size();
     quicpp::base::error_t err =
         this->flowcontrol.update_highest_received(max_offset,
                                                   frame->final_flag());
