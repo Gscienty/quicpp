@@ -9,7 +9,7 @@ namespace base {
 
 class readable {
 public:
-    virtual int read(uint8_t *buffer_ptr, size_t size) = 0;
+    virtual ssize_t read(uint8_t *buffer_ptr, size_t size) = 0;
 };
 
 }
