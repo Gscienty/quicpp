@@ -17,6 +17,8 @@ const int max_tracked_skipped_packets = 10;
 const int max_outstanding_sent_packets = 2 * default_max_cwnd_packets;
 const std::chrono::microseconds min_pacing_delay(100);
 const int max_tracked_received_ack_ranges = default_max_cwnd_packets;
+const uint64_t max_byte_count = (1UL << 62) - 1;
+const int max_stream_frame_sorter_gaps = 1000;
 
 
 }
