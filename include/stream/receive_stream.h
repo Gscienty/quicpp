@@ -45,6 +45,7 @@ public:
     receive_stream(quicpp::base::stream_id_t stream_id,
                    quicpp::stream::stream_sender &sender,
                    quicpp::flowcontrol::stream &flowcontrol);
+    virtual ~receive_stream() {}
     quicpp::base::stream_id_t &stream_id();
     quicpp::base::error_t cancel_read(quicpp::base::error_t err);
     quicpp::base::error_t 
