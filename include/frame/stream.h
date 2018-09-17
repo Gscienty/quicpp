@@ -4,6 +4,7 @@
 #include "frame/type.h"
 #include "base/stream_id_t.h"
 #include "base/varint.h"
+#include "base/error.h"
 #include <string>
 
 namespace quicpp {
@@ -16,7 +17,6 @@ private:
     bool _final_flag;
     quicpp::base::stream_id_t _stream_id;
     quicpp::base::varint _offset;
-    quicpp::base::varint _len;
     std::basic_string<uint8_t> _data;
 public:
     stream();
@@ -30,8 +30,10 @@ public:
     bool &final_flag();
     quicpp::base::stream_id_t &stream_id();
     quicpp::base::varint &offset();
-    quicpp::base::varint &len();
     std::basic_string<uint8_t> &data();
+    uint64_t maxdata_len(uint64_t max_size);
+    std::pair<quicpp::frame::stream *, quicpp::base::error_t>
+    maybe_split(uint64_t maxsize);
 };
 
 }
