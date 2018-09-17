@@ -2,7 +2,7 @@
 #include "params.h"
 
 quicpp::stream::stream_frame_sorter::stream_frame_sorter()
-    : read_position(0) {
+    : _read_position(0) {
     this->gaps.push_back(std::make_pair(0UL, quicpp::max_byte_count));
 }
 
@@ -125,16 +125,20 @@ quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
 quicpp::frame::stream *quicpp::stream::stream_frame_sorter::pop() {
     quicpp::frame::stream *frame = this->head();
     if (frame != nullptr) {
-        this->read_position += frame->data().size();
+        this->_read_position += frame->data().size();
         this->queued_frames.erase(this->queued_frames.find(frame->offset()));
     }
     return frame;
 }
 
 quicpp::frame::stream *quicpp::stream::stream_frame_sorter::head() {
-    auto frame_itr = this->queued_frames.find(this->read_position);
+    auto frame_itr = this->queued_frames.find(this->_read_position);
     if (frame_itr != this->queued_frames.end()) {
         return std::get<1>(*frame_itr);
     }
     return nullptr;
+}
+
+uint64_t &quicpp::stream::stream_frame_sorter::read_position() {
+    return this->_read_position;
 }
