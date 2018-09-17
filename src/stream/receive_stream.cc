@@ -250,7 +250,7 @@ close_for_shutdown(quicpp::base::error_t err) {
     this->signal_read();
 }
 
-uint64_t quicpp::stream::receive_stream::get_window_update() {
+uint64_t quicpp::stream::receive_stream::update() {
     return this->flowcontrol.update();
 }
 

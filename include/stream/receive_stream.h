@@ -60,7 +60,7 @@ public:
     void close_remote(uint64_t offset);
     void on_close(uint64_t offset);
     void close_for_shutdown(quicpp::base::error_t err);
-    uint64_t get_window_update();
+    uint64_t update();
     void signal_read();
 };
 
