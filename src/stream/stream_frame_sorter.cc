@@ -8,7 +8,7 @@ quicpp::stream::stream_frame_sorter::stream_frame_sorter()
 
 quicpp::base::error_t
 quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
-    if (frame->empty()) {
+    if (frame->data().empty()) {
         if (frame->final_flag()) {
             this->queued_frames[frame->offset()] = frame;
         }
@@ -18,18 +18,18 @@ quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
     bool was_cut = false;
     auto old_frame_itr = this->queued_frames.find(frame->offset());
     if (old_frame_itr != this->queued_frames.end()) {
-        if (frame->len() <= old_frame_itr->second->len()) {
+        if (frame->data().size() <= old_frame_itr->second->data().size()) {
             return quicpp::error::duplicate_stream_data;
         }
         frame->data() =
-            std::basic_string<uint8_t>(frame->data().begin() + old_frame_itr->second->len(),
+            std::basic_string<uint8_t>(frame->data().begin() + old_frame_itr->second->data().size(),
                                        frame->data().end());
-        frame->offset() = frame->offset() + old_frame_itr->second->len();
+        frame->offset() = frame->offset() + old_frame_itr->second->data().size();
         was_cut = true;
     }
 
     uint64_t start = frame->offset();
-    uint64_t end = frame->offset() + frame->len();
+    uint64_t end = frame->offset() + frame->data().size();
     
     auto gap_itr = this->gaps.begin();
     for (;
@@ -76,7 +76,7 @@ quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
 
     if (end > std::get<1>(*endgap_itr)) {
         uint64_t cut_len = end - std::get<1>(*endgap_itr);
-        uint64_t len = frame->len() - cut_len;
+        uint64_t len = frame->data().size() - cut_len;
         end -= cut_len;
         frame->data() =
             std::basic_string<uint8_t>(frame->data().begin(),
@@ -114,7 +114,7 @@ quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
     if (was_cut) {
         frame->data() =
             std::basic_string<uint8_t>(frame->data().begin(),
-                                       frame->data().begin() + frame->len());
+                                       frame->data().begin() + frame->data().size());
     }
 
     this->queued_frames[frame->offset()] = frame;
@@ -125,7 +125,7 @@ quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
 quicpp::frame::stream *quicpp::stream::stream_frame_sorter::pop() {
     quicpp::frame::stream *frame = this->head();
     if (frame != nullptr) {
-        this->read_position += frame->len();
+        this->read_position += frame->data().size();
         this->queued_frames.erase(this->queued_frames.find(frame->offset()));
     }
     return frame;
