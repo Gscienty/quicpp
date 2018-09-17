@@ -19,7 +19,7 @@ class stream
     : public quicpp::base::readable
     , public quicpp::base::writable
     , public quicpp::base::closable {
-private:
+protected:
     quicpp::stream::send_stream *send_stream;
     quicpp::stream::receive_stream *receive_stream;
     quicpp::stream::stream_sender *sender_for_sendstream;

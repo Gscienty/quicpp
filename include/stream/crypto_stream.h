@@ -1,13 +1,7 @@
-#ifndef _QUICPP_STREAM_CRYPTO_STREAM_
-#define _QUICPP_STREAM_CRYPTO_STREAM_
+#ifndef _QUICPP_STREAM_CRYPT_STREAM_
+#define _QUICPP_STREAM_CRYPT_STREAM_
 
 #include "stream/stream.h"
-#include "frame/stream.h"
-#include "frame/max_stream_data.h"
-#include "base/stream_id_t.h"
-#include "base/error.h"
-#include "base/readable.h"
-#include "base/writable.h"
 #include <cstdint>
 #include <utility>
 
@@ -20,6 +14,8 @@ public:
                   quicpp::flowcontrol::stream &flowcontrol);
 
     void set_read_offset(uint64_t offset);
+    virtual std::pair<quicpp::frame::stream *, bool> pop_stream_frame(uint64_t len) = 0;
+    virtual uint64_t update() = 0;
 };
 
 }
