@@ -16,6 +16,8 @@ public:
 
     bool bidirectional() const;
     bool client_initiated() const;
+
+    stream_id_t & operator+= (const uint64_t val);
 };
 
 }

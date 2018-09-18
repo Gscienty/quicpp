@@ -22,3 +22,8 @@ bool quicpp::base::stream_id_t::bidirectional() const {
 bool quicpp::base::stream_id_t::client_initiated() const {
     return (*this & 0x01) == 0x00;
 }
+
+quicpp::base::stream_id_t & quicpp::base::stream_id_t::operator+=(const uint64_t val) {
+    this->value() += val;
+    return *this;
+}
