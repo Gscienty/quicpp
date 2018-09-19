@@ -47,6 +47,12 @@ const quicpp::base::error_t write_on_canceled_stream(4005);
 const quicpp::base::error_t write_on_closed_stream(4006);
 const quicpp::base::error_t peer_tried_to_open_stream(4007);
 const quicpp::base::error_t tried_to_delete_unknow_stream(4008);
+const quicpp::base::error_t too_many_open_streams(4009);
+const quicpp::base::error_t invalid_stream_id(4010);
+const quicpp::base::error_t peer_attemped_to_open_recieve_stream(4011);
+const quicpp::base::error_t invalid_stream_type(4012);
+const quicpp::base::error_t peer_attemped_to_open_send_stream(4013);
+const quicpp::base::error_t received_max_stream_data_frame_for_incoming_stream(4014);
 
 }
 }
