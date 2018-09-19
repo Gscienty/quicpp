@@ -28,6 +28,8 @@ public:
            std::function<void (const quicpp::base::stream_id_t &)> update_func,
            quicpp::congestion::rtt &rtt);
 
+    virtual ~stream() {}
+
     quicpp::base::error_t update_highest_received(uint64_t offset, bool final);
     virtual void sent(const uint64_t &) override;
     virtual void read(const uint64_t &) override;

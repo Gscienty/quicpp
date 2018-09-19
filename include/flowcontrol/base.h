@@ -32,6 +32,7 @@ protected:
 public:
     base(uint64_t rwnd, uint64_t max_rwnd, quicpp::congestion::rtt &);
     base(uint64_t rwnd, uint64_t max_rwnd, uint64_t swnd, quicpp::congestion::rtt &);
+    virtual ~base() {}
     virtual uint64_t send_window() const = 0;
     void send_window(const uint64_t &);
     virtual void sent(const uint64_t &);
