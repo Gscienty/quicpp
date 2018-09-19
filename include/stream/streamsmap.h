@@ -7,6 +7,7 @@
 #include "stream/outgoing_bidi_streamsmap.h"
 #include "stream/stream_sender.h"
 #include "stream/stream_getter.h"
+#include "handshake/transport_parameters.h"
 #include "base/stream_id_t.h"
 #include "flowcontrol/stream.h"
 #include <cstdint>
@@ -50,6 +51,7 @@ public:
     std::pair<quicpp::stream::send_stream *, quicpp::base::error_t>
     get_or_open_send_stream(quicpp::base::stream_id_t stream_id) override;
     quicpp::base::error_t handle_max_stream_id_frame(quicpp::frame::max_stream_id *frame);
+    void update_limits(quicpp::handshake::treansport_parameters &param);
     void close_with_error(quicpp::base::error_t err);
 };
 
