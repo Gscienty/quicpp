@@ -4,6 +4,8 @@
 #include "stream/stream_sender.h"
 #include "base/stream_id_t.h"
 #include "base/error.h"
+#include "base/writable.h"
+#include "base/closable.h"
 #include "flowcontrol/stream.h"
 #include "frame/stream.h"
 #include "frame/stop_sending.h"
@@ -14,11 +16,14 @@
 #include <condition_variable>
 #include <chrono>
 #include <utility>
+#include <memory>
 
 namespace quicpp {
 namespace stream {
 
-class send_stream {
+class send_stream
+    : public quicpp::base::writable
+    , public quicpp::base::closable {
 private:
     std::mutex mutex;
 
@@ -38,12 +43,12 @@ private:
     std::condition_variable write_cond;
     std::chrono::system_clock::time_point write_deadline;
     
-    quicpp::flowcontrol::stream &flowcontrol;
+    std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol;
 
 public:
     send_stream(quicpp::base::stream_id_t stream_id,
                 quicpp::stream::stream_sender &sender,
-                quicpp::flowcontrol::stream &flowcontrol);
+                std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol);
 
     quicpp::base::stream_id_t &stream_id();
     std::tuple<bool, quicpp::frame::stream *, bool>
@@ -51,7 +56,7 @@ public:
     std::pair<quicpp::frame::stream *, bool>
     pop_stream_frame(uint64_t max_bytes);
     std::pair<std::basic_string<uint8_t>, bool> get_data_for_writing(uint64_t max_bytes);
-    quicpp::base::error_t close();
+    virtual quicpp::base::error_t close() override;
     std::pair<bool, quicpp::base::error_t>
     cancel_write_implement(uint16_t errorcode, quicpp::base::error_t write_err);
     quicpp::base::error_t cancel_write(uint16_t errorcode);
@@ -62,7 +67,9 @@ public:
     void close_for_shutdown(quicpp::base::error_t err);
     uint64_t get_write_offset();
     void signal_write();
-    std::pair<int, quicpp::base::error_t> write(std::basic_string<uint8_t> p);
+    virtual
+    std::pair<ssize_t, quicpp::base::error_t>
+    write(uint8_t *buffer_ptr, size_t size) override;
 };
 
 }

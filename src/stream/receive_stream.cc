@@ -4,7 +4,7 @@
 
 quicpp::stream::receive_stream::receive_stream(quicpp::base::stream_id_t stream_id,
                                                quicpp::stream::stream_sender &sender,
-                                               quicpp::flowcontrol::stream &flowcontrol)
+                                               std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol)
     : _stream_id(stream_id) 
     , sender(sender)
     , readpos_in_frame(0)
@@ -101,9 +101,9 @@ quicpp::stream::receive_stream::read_implement(uint8_t *buffer_ptr, size_t size)
         locker.lock();
 
         if (!this->reset_remotely) {
-            this->flowcontrol.read(copy_size);
+            this->flowcontrol->read(copy_size);
         }
-        this->flowcontrol.maybe_update();
+        this->flowcontrol->maybe_update();
 
         if (this->readpos_in_frame >= static_cast<ssize_t>(frame->data().size())) {
             this->frame_queue.pop();
@@ -117,7 +117,8 @@ quicpp::stream::receive_stream::read_implement(uint8_t *buffer_ptr, size_t size)
     return std::make_tuple(false, bytes_read, quicpp::error::success);
 }
 
-ssize_t quicpp::stream::receive_stream::read(uint8_t *buffer_ptr, size_t size) {
+std::pair<ssize_t, quicpp::base::error_t>
+quicpp::stream::receive_stream::read(uint8_t *buffer_ptr, size_t size) {
     std::tuple<bool, int, quicpp::base::error_t> result =
         this->read_implement(buffer_ptr, size);
 
@@ -125,10 +126,7 @@ ssize_t quicpp::stream::receive_stream::read(uint8_t *buffer_ptr, size_t size) {
         this->sender.on_stream_completed(this->_stream_id);
     }
 
-    if (std::get<2>(result) == quicpp::error::success) {
-        return std::get<0>(result);
-    }
-    return -1;
+    return std::make_pair(std::get<1>(result), std::get<2>(result));
 }
 
 
@@ -179,7 +177,7 @@ handle_rst_frame_implement(quicpp::frame::rst *frame) {
     }
     
     quicpp::base::error_t err = 
-        this->flowcontrol.update_highest_received(frame->final_offset(), true);
+        this->flowcontrol->update_highest_received(frame->final_offset(), true);
     if (err != quicpp::error::success) {
         return std::make_pair(false, err);
     }
@@ -199,7 +197,7 @@ quicpp::stream::receive_stream::
 handle_stream_frame(quicpp::frame::stream *frame) {
     uint64_t max_offset = frame->offset() + frame->data().size();
     quicpp::base::error_t err =
-        this->flowcontrol.update_highest_received(max_offset,
+        this->flowcontrol->update_highest_received(max_offset,
                                                   frame->final_flag());
     if (err != quicpp::error::success) {
         return err;
@@ -251,7 +249,7 @@ close_for_shutdown(quicpp::base::error_t err) {
 }
 
 uint64_t quicpp::stream::receive_stream::update() {
-    return this->flowcontrol.update();
+    return this->flowcontrol->update();
 }
 
 void quicpp::stream::receive_stream::signal_read() {

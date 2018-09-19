@@ -6,7 +6,7 @@
 quicpp::stream::send_stream::
 send_stream(quicpp::base::stream_id_t stream_id,
             quicpp::stream::stream_sender &sender,
-            quicpp::flowcontrol::stream &flowcontrol)
+            std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol)
     : _stream_id(stream_id)
     , sender(sender)
     , write_offset(0)
@@ -47,7 +47,7 @@ quicpp::stream::send_stream::pop_stream_frame_implement(uint64_t max_bytes) {
         }
         bool is_blocked;
         uint64_t offset;
-        std::tie(is_blocked, offset) = this->flowcontrol.is_newly_blocked();
+        std::tie(is_blocked, offset) = this->flowcontrol->is_newly_blocked();
         if (is_blocked) {
             quicpp::frame::stream_blocked *frame = new quicpp::frame::stream_blocked();
             frame->stream_id() = this->_stream_id;
@@ -84,7 +84,7 @@ quicpp::stream::send_stream::get_data_for_writing(uint64_t max_bytes) {
                               this->finished_writing && this->fin_sent == false);
     }
     if (this->_stream_id != 0) {
-        max_bytes = std::min(max_bytes, this->flowcontrol.send_window());
+        max_bytes = std::min(max_bytes, this->flowcontrol->send_window());
     }
     if (max_bytes == 0) {
         return std::make_pair(std::basic_string<uint8_t>(), false);
@@ -101,7 +101,7 @@ quicpp::stream::send_stream::get_data_for_writing(uint64_t max_bytes) {
         this->signal_write();
     }
     this->write_offset += ret.size();
-    this->flowcontrol.sent(ret.size());
+    this->flowcontrol->sent(ret.size());
     return std::make_pair(ret,
                           this->finished_writing &&
                           this->data_for_writing.empty() &&
@@ -176,7 +176,7 @@ handle_stop_sending_frame(quicpp::frame::stop_sending *frame) {
 
 void quicpp::stream::send_stream::
 handle_max_stream_data_frame(quicpp::frame::max_stream_data *frame) {
-    this->flowcontrol.base::send_window(frame->maximum_stream_data());
+    this->flowcontrol->base::send_window(frame->maximum_stream_data());
     std::lock_guard<std::mutex> locker(this->mutex);
     if (this->data_for_writing.empty() == false) {
         this->sender.on_has_stream_data(this->_stream_id);
@@ -211,8 +211,8 @@ void quicpp::stream::send_stream::signal_write() {
     this->write_cond.notify_one();
 }
 
-std::pair<int, quicpp::base::error_t>
-quicpp::stream::send_stream::write(std::basic_string<uint8_t> p) {
+std::pair<ssize_t, quicpp::base::error_t>
+quicpp::stream::send_stream::write(uint8_t *p, size_t size) {
     std::unique_lock<std::mutex> locker(this->mutex);
     if (this->finished_writing) {
         return std::make_pair(0, quicpp::error::write_on_closed_stream);
@@ -225,18 +225,18 @@ quicpp::stream::send_stream::write(std::basic_string<uint8_t> p) {
         return std::make_pair(0, quicpp::error::deadline_error);
     }
 
-    if (p.empty()) {
+    if (size == 0) {
         return std::make_pair(0, quicpp::error::success);
     }
 
-    this->data_for_writing.assign(p.begin(), p.end());
+    this->data_for_writing.assign(p, p + size);
     this->sender.on_has_stream_data(this->_stream_id);
 
     int bytes_written = 0;
     quicpp::base::error_t err;
 
     while (true) {
-        bytes_written = p.size() - this->data_for_writing.size();
+        bytes_written = size - this->data_for_writing.size();
         auto deadline = this->write_deadline;
         if (deadline != std::chrono::system_clock::time_point::min() &&
             std::chrono::system_clock::now() >= deadline) {

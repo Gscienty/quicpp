@@ -24,8 +24,6 @@ private:
     quicpp::base::stream_id_t max_stream;
     quicpp::base::stream_id_t highest_stream;
 
-    int max_num_streams;
-
     std::function<quicpp::stream::send_stream * (quicpp::base::stream_id_t)> new_stream;
     std::function<void (quicpp::frame::frame *)> _queue_stream_id_blocked;
     std::function<void (quicpp::frame::stream_id_blocked *)> queue_stream_id_blocked;
@@ -34,8 +32,6 @@ private:
 
 public:
     outgoing_uni_streamsmap(quicpp::base::stream_id_t next_stream,
-                            quicpp::base::stream_id_t initial_max_stream_id,
-                            int max_num_streams,
                             std::function<void (quicpp::frame::frame *)> queue_control_frame,
                             std::function<quicpp::stream::send_stream * (quicpp::base::stream_id_t)> new_stream);
 

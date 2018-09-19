@@ -2,13 +2,9 @@
 
 quicpp::stream::outgoing_uni_streamsmap::
 outgoing_uni_streamsmap(quicpp::base::stream_id_t next_stream,
-                        quicpp::base::stream_id_t initial_max_stream_id,
-                        int max_num_streams,
                         std::function<void (quicpp::frame::frame *)> queue_control_frame,
                         std::function<quicpp::stream::send_stream * (quicpp::base::stream_id_t)> new_stream)
     : next_stream(next_stream)
-    , max_stream(initial_max_stream_id)
-    , max_num_streams(max_num_streams)
     , new_stream(new_stream)
     , _queue_stream_id_blocked(queue_control_frame)
     , queue_stream_id_blocked([this] (quicpp::frame::stream_id_blocked *frame) -> void {

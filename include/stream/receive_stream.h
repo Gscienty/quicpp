@@ -13,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <tuple>
+#include <memory>
 
 namespace quicpp {
 namespace stream {
@@ -40,11 +41,11 @@ public:
     std::condition_variable read_cond;
     std::chrono::system_clock::time_point read_deadline;
 
-    quicpp::flowcontrol::stream &flowcontrol;
+    std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol;
 public:
     receive_stream(quicpp::base::stream_id_t stream_id,
                    quicpp::stream::stream_sender &sender,
-                   quicpp::flowcontrol::stream &flowcontrol);
+                   std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol);
     virtual ~receive_stream() {}
     quicpp::base::stream_id_t &stream_id();
     quicpp::base::error_t cancel_read(quicpp::base::error_t err);
@@ -52,7 +53,9 @@ public:
     set_read_deadline(std::chrono::system_clock::time_point t);
     std::tuple<bool, ssize_t, quicpp::base::error_t>
     read_implement(uint8_t *buffer_ptr, size_t size);
-    virtual ssize_t read(uint8_t *buffer_ptr, size_t size) override;
+    virtual
+    std::pair<ssize_t, quicpp::base::error_t>
+    read(uint8_t *buffer_ptr, size_t size) override;
     quicpp::base::error_t handle_stream_frame(quicpp::frame::stream *frame);
     std::pair<bool, quicpp::base::error_t>
     handle_rst_frame_implement(quicpp::frame::rst *frame);
