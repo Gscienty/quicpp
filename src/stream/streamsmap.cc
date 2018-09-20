@@ -167,3 +167,19 @@ void quicpp::stream::streamsmap::close_with_error(quicpp::base::error_t err) {
     this->incoming_uni_streams->close_with_error(err);
 }
 
+void quicpp::stream::streamsmap::
+update_limits(quicpp::handshake::treansport_parameters &param) {
+    bool peer_is_client = false;
+    if (this->is_client == false) {
+        peer_is_client = true;
+    }
+
+    this->outgoing_bidi_streams
+        ->set_max_stream(quicpp::base::stream_id_t::
+                         max_bidi_stream_id(param.max_bidi_streams(),
+                                            peer_is_client));
+    this->outgoing_uni_streams
+        ->set_max_stream(quicpp::base::stream_id_t::
+                         max_uni_stream_id(param.max_uni_streams(),
+                                           peer_is_client));
+}
