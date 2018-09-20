@@ -23,6 +23,17 @@ struct packet {
     std::vector<uint64_t> retransmitted_as;
     bool is_retransmission;
     uint64_t retransmitted_of;
+
+    packet()
+        : packet_number(0)
+        , packet_type(0)
+        , len(0)
+        , encryption_level(0)
+        , largest_acked(0)
+        , can_be_retransmitted(false)
+        , included_in_bytes_inflight(false)
+        , is_retransmission(false)
+        , retransmitted_of(0) {}
 };
 }
 }
