@@ -20,7 +20,8 @@ const int max_tracked_received_ack_ranges = default_max_cwnd_packets;
 const uint64_t max_byte_count = (1UL << 62) - 1;
 const int max_stream_frame_sorter_gaps = 1000;
 const uint64_t min_stream_frame_size = 128;
-
+const uint64_t skip_packet_average_period_length = 500;
+const uint64_t min_initial_packet_size = 1200;
 
 }
 
