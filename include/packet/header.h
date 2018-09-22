@@ -31,6 +31,7 @@ private:
     uint32_t _packet_number;
 
 public:
+    header();
     header(std::basic_istream<uint8_t> &in, const size_t dest_conn_id_len = 0);
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;

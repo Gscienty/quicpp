@@ -1,5 +1,13 @@
 #include "packet/header.h"
 
+quicpp::packet::header::header()
+    : _header_form(false)
+    , _key_phase(false)
+    , _type(0)
+    , _version(0)
+    , _packet_number_length(0)
+    , _packet_number(0) {}
+
 quicpp::packet::header::header(std::basic_istream<uint8_t> &in, const size_t dest_conn_id_len) {
     uint8_t first_byte = in.get();
     if ((first_byte & 0x80) != 0x00) {
