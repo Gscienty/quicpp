@@ -107,7 +107,7 @@ uint64_t quicpp::frame::stream::maxdata_len(uint64_t maxsize) {
     return maxdata_len;
 }
 
-std::pair<quicpp::frame::stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::frame::stream>, quicpp::base::error_t>
 quicpp::frame::stream::maybe_split(uint64_t maxsize) {
     if (maxsize >= this->size()) {
         return std::make_pair(nullptr, quicpp::error::success);
@@ -118,7 +118,8 @@ quicpp::frame::stream::maybe_split(uint64_t maxsize) {
         return std::make_pair(nullptr, quicpp::error::too_small);
     }
 
-    quicpp::frame::stream *frame = new quicpp::frame::stream();
+    std::shared_ptr<quicpp::frame::stream> frame = 
+        std::make_shared<quicpp::frame::stream>();
     frame->_final_flag = false;
     frame->_stream_id = this->_stream_id;
     frame->_offset = this->_offset;

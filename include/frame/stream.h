@@ -6,6 +6,7 @@
 #include "base/varint.h"
 #include "base/error.h"
 #include <string>
+#include <memory>
 
 namespace quicpp {
 namespace frame {
@@ -32,7 +33,7 @@ public:
     quicpp::base::varint &offset();
     std::basic_string<uint8_t> &data();
     uint64_t maxdata_len(uint64_t max_size);
-    std::pair<quicpp::frame::stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::frame::stream>, quicpp::base::error_t>
     maybe_split(uint64_t maxsize);
 };
 
