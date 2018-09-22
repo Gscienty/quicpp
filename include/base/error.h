@@ -53,6 +53,7 @@ const quicpp::base::error_t peer_attemped_to_open_recieve_stream(4011);
 const quicpp::base::error_t invalid_stream_type(4012);
 const quicpp::base::error_t peer_attemped_to_open_send_stream(4013);
 const quicpp::base::error_t received_max_stream_data_frame_for_incoming_stream(4014);
+const quicpp::base::error_t missing_payload(5001);
 
 }
 }
