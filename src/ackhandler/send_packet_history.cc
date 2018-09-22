@@ -8,15 +8,15 @@ quicpp::ackhandler::send_packet_history::send_packet_history()
 
 void 
 quicpp::ackhandler::send_packet_history::
-send_packet(quicpp::ackhandler::packet *p) {
+send_packet(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     this->send_packet_implement(p);
 }
 
-std::list<quicpp::ackhandler::packet *>::iterator
+std::list<std::shared_ptr<quicpp::ackhandler::packet>>::iterator
 quicpp::ackhandler::send_packet_history::
-send_packet_implement(quicpp::ackhandler::packet *p) {
+send_packet_implement(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     this->packet_list.push_back(p);
-    std::list<quicpp::ackhandler::packet *>::iterator el = 
+    std::list<std::shared_ptr<quicpp::ackhandler::packet>>::iterator el = 
         this->packet_list.rbegin().base();
     if (this->_first_outstanding == this->packet_list.end()) {
         this->_first_outstanding = el;
@@ -32,7 +32,7 @@ send_packet_implement(quicpp::ackhandler::packet *p) {
     return el;
 }
 
-quicpp::ackhandler::packet *
+std::shared_ptr<quicpp::ackhandler::packet>
 quicpp::ackhandler::send_packet_history::get_packet(uint64_t packet_number) {
     if (this->packet_map.find(packet_number) == this->packet_map.end()) {
         return nullptr;
@@ -42,7 +42,9 @@ quicpp::ackhandler::send_packet_history::get_packet(uint64_t packet_number) {
 
 quicpp::base::error_t
 quicpp::ackhandler::send_packet_history::
-iterate(std::function<std::pair<bool, quicpp::base::error_t> (quicpp::ackhandler::packet *)> func) {
+iterate(std::function<
+        std::pair<bool, quicpp::base::error_t>
+        (std::shared_ptr<quicpp::ackhandler::packet> &)> func) {
     bool cont = true;
     for (auto el = this->packet_list.begin(); 
          cont && el != this->packet_list.end();
@@ -59,7 +61,7 @@ iterate(std::function<std::pair<bool, quicpp::base::error_t> (quicpp::ackhandler
     return quicpp::error::success;
 }
 
-quicpp::ackhandler::packet *
+std::shared_ptr<quicpp::ackhandler::packet>
 quicpp::ackhandler::send_packet_history::first_outstanding() const {
     if (this->_first_outstanding == this->packet_list.end()) {
         return nullptr;
@@ -133,7 +135,7 @@ quicpp::ackhandler::send_packet_history::remove(uint64_t packet_number) {
         }
     }
 
-    delete el->second;
+    el->second.reset();
     this->packet_map.erase(el);
     auto list_el = std::find(this->packet_list.begin(),
                              this->packet_list.end(),

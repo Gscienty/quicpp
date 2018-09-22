@@ -132,7 +132,7 @@ maybe_queue_ack(uint64_t packet_number,
     }
 }
 
-quicpp::frame::ack *
+std::shared_ptr<quicpp::frame::ack>
 quicpp::ackhandler::received_packet_handler::get_ack_frame() {
     std::chrono::system_clock::time_point now =
         std::chrono::system_clock::now();
@@ -142,7 +142,7 @@ quicpp::ackhandler::received_packet_handler::get_ack_frame() {
         return nullptr;
     }
 
-    quicpp::frame::ack *ack = new quicpp::frame::ack();
+    std::shared_ptr<quicpp::frame::ack> ack = std::make_shared<quicpp::frame::ack>();
 
     ack->ranges() = this->packet_history.get_ack_ranges();
     ack->delay() = now - this->largest_observed_received_time;

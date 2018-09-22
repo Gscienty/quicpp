@@ -2,19 +2,19 @@
 #include "ackhandler/packet.h"
 #include <algorithm>
 
-std::vector<quicpp::frame::frame *>
+std::vector<std::shared_ptr<quicpp::frame::frame>>
 quicpp::ackhandler::
-strip_non_retransmittable_frames(std::vector<quicpp::frame::frame *> &fs) {
-    std::vector<quicpp::frame::frame *> result;
-    std::for_each(fs.begin(), fs.end(),
-                  [&] (quicpp::frame::frame *f) -> void {
-                  if (quicpp::ackhandler::is_frame_retransmittable(*f)) {
-                    result.push_back(f);
-                  }
-                  else {
-                    delete f;
-                  }
-                  });
+strip_non_retransmittable_frames(std::vector<std::shared_ptr<quicpp::frame::frame>> &fs) {
+    std::vector<std::shared_ptr<quicpp::frame::frame>> result;
+    for (auto f = fs.begin(); f != fs.end();) {
+        if (quicpp::ackhandler::is_frame_retransmittable(**f)) {
+            result.push_back(*f);
+            f++;
+        }
+        else {
+            f = fs.erase(f);
+        }
+    }
     return result;
 }
 
@@ -31,7 +31,7 @@ is_frame_retransmittable(quicpp::frame::frame &fs) {
 
 bool
 quicpp::ackhandler::
-has_retransmittable_frames(std::vector<quicpp::frame::frame *> &fs) {
+has_retransmittable_frames(std::vector<std::shared_ptr<quicpp::frame::frame>> &fs) {
     for (auto iter = fs.begin(); iter != fs.end(); iter++) {
         if (quicpp::ackhandler::is_frame_retransmittable(**iter)) {
             return true;

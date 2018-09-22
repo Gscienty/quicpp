@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <chrono>
+#include <memory>
 
 namespace quicpp {
 namespace ackhandler {
@@ -12,7 +13,7 @@ namespace ackhandler {
 struct packet {
     uint64_t packet_number;
     uint8_t packet_type;
-    std::vector<quicpp::frame::frame *> frames;
+    std::vector<std::shared_ptr<quicpp::frame::frame>> frames;
     uint64_t len;
     uint8_t encryption_level;
     std::chrono::system_clock::time_point send_time;

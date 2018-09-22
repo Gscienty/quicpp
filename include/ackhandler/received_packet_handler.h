@@ -7,6 +7,7 @@
 #include "frame/ack.h"
 #include <cstdint>
 #include <chrono>
+#include <memory>
 
 namespace quicpp {
 namespace ackhandler {
@@ -34,7 +35,7 @@ private:
     int retransmittable_packets_reveived_since_last_ack;
     bool ack_queued;
     std::chrono::system_clock::time_point ack_alarm;
-    quicpp::frame::ack *last_ack;
+    std::shared_ptr<quicpp::frame::ack> last_ack;
 
 public:
     received_packet_handler(quicpp::congestion::rtt &rtt);
@@ -49,7 +50,7 @@ public:
                          std::chrono::system_clock::time_point rcv_time,
                          bool should_instigate_ack,
                          bool was_missing);
-    quicpp::frame::ack *get_ack_frame();
+    std::shared_ptr<quicpp::frame::ack> get_ack_frame();
     std::chrono::system_clock::time_point &alarm_timeout();
 };
 

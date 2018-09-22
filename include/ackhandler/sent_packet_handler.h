@@ -11,6 +11,7 @@
 #include <chrono>
 #include <vector>
 #include <list>
+#include <memory>
 
 namespace quicpp {
 namespace ackhandler {
@@ -39,11 +40,11 @@ private:
     uint64_t largest_sent_before_rto;
     
     quicpp::ackhandler::send_packet_history packet_history;
-    std::list<quicpp::ackhandler::packet *> retransmission_queue;
+    std::list<std::shared_ptr<quicpp::ackhandler::packet>> retransmission_queue;
 
     uint64_t bytes_inflight;
 
-    quicpp::congestion::send_algo *congestion;
+    std::shared_ptr<quicpp::congestion::send_algo> congestion;
     quicpp::congestion::rtt &rtt;
 
     bool handshake_complete;
@@ -64,23 +65,23 @@ public:
 
     uint64_t lowest_unacked() const;
     void set_handshake_complete();
-    void sent_packet(quicpp::ackhandler::packet *p);
-    void sent_packets_retransmission(std::vector<quicpp::ackhandler::packet *> packets,
+    void sent_packet(std::shared_ptr<quicpp::ackhandler::packet> &p);
+    void sent_packets_retransmission(std::vector<std::shared_ptr<quicpp::ackhandler::packet>> &packets,
                                      uint64_t retransmission_of);
-    bool sent_packet_implement(quicpp::ackhandler::packet *p);
+    bool sent_packet_implement(std::shared_ptr<quicpp::ackhandler::packet> &p);
     void update_loss_detection_alarm();
-    quicpp::base::error_t received_ack(quicpp::frame::ack *ack,
+    quicpp::base::error_t received_ack(std::shared_ptr<quicpp::frame::ack> &ack,
                                        uint64_t with_packet_number,
                                        uint8_t encryption_level,
                                        std::chrono::system_clock::time_point rcv_time);
     uint64_t &lowest_packet_not_confirmed_acked();
-    bool skipped_packets_acked(quicpp::frame::ack *ack);
+    bool skipped_packets_acked(std::shared_ptr<quicpp::frame::ack> &ack);
     bool maybe_update_rtt(uint64_t largest_acked,
                           std::chrono::microseconds ack_delay,
                           std::chrono::system_clock::time_point rcv_time);
-    std::pair<std::vector<quicpp::ackhandler::packet *>, quicpp::base::error_t>
-    determine_newly_acked_packets(quicpp::frame::ack *ack);
-    quicpp::base::error_t on_packet_acked(quicpp::ackhandler::packet *p);
+    std::pair<std::vector<std::shared_ptr<quicpp::ackhandler::packet>>, quicpp::base::error_t>
+    determine_newly_acked_packets(std::shared_ptr<quicpp::frame::ack> &ack);
+    quicpp::base::error_t on_packet_acked(std::shared_ptr<quicpp::ackhandler::packet> &p);
     quicpp::base::error_t
     detect_lost_packets(std::chrono::system_clock::time_point now,
                         uint64_t prior_inflight);
@@ -88,14 +89,14 @@ public:
     std::chrono::microseconds compute_handshake_timeout();
     std::chrono::microseconds compute_tlp_timeout();
     quicpp::base::error_t
-    queue_packet_for_retransmission(quicpp::ackhandler::packet *p);
+    queue_packet_for_retransmission(std::shared_ptr<quicpp::ackhandler::packet> &p);
     quicpp::base::error_t
     queue_handshake_packets_for_retransmission();
     quicpp::base::error_t queue_rtos();
     quicpp::base::error_t on_alarm();
     void verify_rto(uint64_t pn);
-    quicpp::base::error_t stop_retransmission_for(quicpp::ackhandler::packet *p);
-    quicpp::ackhandler::packet *dequeue_packet_for_retransmission();
+    quicpp::base::error_t stop_retransmission_for(std::shared_ptr<quicpp::ackhandler::packet> &p);
+    std::shared_ptr<quicpp::ackhandler::packet> dequeue_packet_for_retransmission();
     size_t packet_number_len(uint64_t p) const;
     quicpp::ackhandler::send_mode_t send_mode();
     std::chrono::system_clock::time_point time_until_send();

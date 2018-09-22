@@ -19,7 +19,7 @@ sent_packet_handler(quicpp::congestion::rtt &rtt)
     , _lowest_packet_not_confirmed_acked(0)
     , largest_sent_before_rto(0)
     , bytes_inflight(0)
-    , congestion(new quicpp::congestion::cubic_sender(rtt,
+    , congestion(std::make_shared<quicpp::congestion::cubic_sender>(rtt,
                                                       quicpp::initial_cwnd,
                                                       quicpp::default_max_cwnd))
     , rtt(rtt)
@@ -32,9 +32,7 @@ sent_packet_handler(quicpp::congestion::rtt &rtt)
     , loss_time(std::chrono::system_clock::time_point::min())
     , alarm(std::chrono::system_clock::time_point::min()) {}
 
-quicpp::ackhandler::sent_packet_handler::~sent_packet_handler() {
-    delete this->congestion;
-}
+quicpp::ackhandler::sent_packet_handler::~sent_packet_handler() {}
 
 uint64_t quicpp::ackhandler::sent_packet_handler::lowest_unacked() const {
     auto p = this->packet_history.first_outstanding();
@@ -45,17 +43,17 @@ uint64_t quicpp::ackhandler::sent_packet_handler::lowest_unacked() const {
 }
 
 void quicpp::ackhandler::sent_packet_handler::set_handshake_complete() {
-    std::list<quicpp::ackhandler::packet *> queue;
+    std::list<std::shared_ptr<quicpp::ackhandler::packet>> queue;
 
     std::for_each(this->retransmission_queue.begin(),
                   this->retransmission_queue.end(),
-                  [&] (quicpp::ackhandler::packet *p) -> void {
+                  [&] (std::shared_ptr<quicpp::ackhandler::packet> &p) -> void {
                     if (p->encryption_level == quicpp::crypt::encryption_forward_secure) {
                         queue.push_back(p);
                     }
                   });
-    std::list<quicpp::ackhandler::packet *> handshake_packets;
-    this->packet_history.iterate([&] (quicpp::ackhandler::packet *p)
+    std::list<std::shared_ptr<quicpp::ackhandler::packet>> handshake_packets;
+    this->packet_history.iterate([&] (std::shared_ptr<quicpp::ackhandler::packet> &p)
                                  -> std::pair<bool, quicpp::base::error_t> {
                                      if (p->encryption_level != quicpp::crypt::encryption_forward_secure) {
                                         handshake_packets.push_back(p);
@@ -74,7 +72,7 @@ void quicpp::ackhandler::sent_packet_handler::set_handshake_complete() {
 
 void
 quicpp::ackhandler::sent_packet_handler::
-sent_packet(quicpp::ackhandler::packet *p) {
+sent_packet(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     if (this->sent_packet_implement(p)) {
         this->packet_history.send_packet(p);
         this->update_loss_detection_alarm();
@@ -83,12 +81,12 @@ sent_packet(quicpp::ackhandler::packet *p) {
 
 void
 quicpp::ackhandler::sent_packet_handler::
-sent_packets_retransmission(std::vector<quicpp::ackhandler::packet *> packets,
+sent_packets_retransmission(std::vector<std::shared_ptr<quicpp::ackhandler::packet>> &packets,
                             uint64_t retransmission_of) {
-    std::vector<quicpp::ackhandler::packet *> p;
+    std::vector<std::shared_ptr<quicpp::ackhandler::packet>> p;
     std::for_each(packets.begin(),
                   packets.end(),
-                  [&, this] (quicpp::ackhandler::packet *packet) -> void {
+                  [&, this] (std::shared_ptr<quicpp::ackhandler::packet> packet) -> void {
                       if (this->sent_packet_implement(packet)) {
                         p.push_back(packet);
                       }
@@ -102,7 +100,7 @@ sent_packets_retransmission(std::vector<quicpp::ackhandler::packet *> packets,
 
 bool
 quicpp::ackhandler::sent_packet_handler::
-sent_packet_implement(quicpp::ackhandler::packet *p) {
+sent_packet_implement(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     for (uint64_t pn = this->ls_pn + 1; pn < p->packet_number; pn++) {
         this->skipped_packets.push_back(pn);
         if (this->skipped_packets.size() > quicpp::max_tracked_skipped_packets) {
@@ -115,7 +113,7 @@ sent_packet_implement(quicpp::ackhandler::packet *p) {
     if (!p->frames.empty()) {
         if (p->frames.front()->type() == quicpp::frame::frame_type_ack) {
             p->largest_acked = 
-                dynamic_cast<quicpp::frame::ack *>(p->frames.front())->largest();
+                dynamic_cast<quicpp::frame::ack *>(p->frames.front().get())->largest();
         }
     }
 
@@ -147,7 +145,7 @@ sent_packet_implement(quicpp::ackhandler::packet *p) {
 
 quicpp::base::error_t
 quicpp::ackhandler::sent_packet_handler::
-received_ack(quicpp::frame::ack *ack,
+received_ack(std::shared_ptr<quicpp::frame::ack> &ack,
              uint64_t with_packet_number,
              uint8_t encryption_level,
              std::chrono::system_clock::time_point rcv_time) {
@@ -172,7 +170,7 @@ received_ack(quicpp::frame::ack *ack,
         this->congestion->maybe_exit_slowstart();
     }
 
-    std::vector<quicpp::ackhandler::packet *> acked_packets;
+    std::vector<std::shared_ptr<quicpp::ackhandler::packet>> acked_packets;
     quicpp::base::error_t err;
     std::tie(acked_packets, err) = this->determine_newly_acked_packets(ack);
     if (err != quicpp::error::success) {
@@ -189,7 +187,7 @@ received_ack(quicpp::frame::ack *ack,
                 std::max(this->_lowest_packet_not_confirmed_acked,
                 (*p)->largest_acked + 1);
         }
-        err = this->on_packet_acked((*p));
+        err = this->on_packet_acked(*p);
         if (err != quicpp::error::success) {
             return err;
         }
@@ -219,16 +217,16 @@ lowest_packet_not_confirmed_acked() {
     return this->_lowest_packet_not_confirmed_acked;
 }
 
-std::pair<std::vector<quicpp::ackhandler::packet *>, quicpp::base::error_t>
+std::pair<std::vector<std::shared_ptr<quicpp::ackhandler::packet>>, quicpp::base::error_t>
 quicpp::ackhandler::sent_packet_handler::
-determine_newly_acked_packets(quicpp::frame::ack *ack) {
-    std::vector<quicpp::ackhandler::packet *> acked_packets;
+determine_newly_acked_packets(std::shared_ptr<quicpp::frame::ack> &ack) {
+    std::vector<std::shared_ptr<quicpp::ackhandler::packet>> acked_packets;
     int ack_range_index = 0;
     uint64_t lowest_acked = ack->smallest();
     uint64_t largest_acked = ack->largest();
 
     quicpp::base::error_t err = this->packet_history
-        .iterate([&] (quicpp::ackhandler::packet *p) -> std::pair<bool, quicpp::base::error_t> {
+        .iterate([&] (std::shared_ptr<quicpp::ackhandler::packet> &p) -> std::pair<bool, quicpp::base::error_t> {
                      if (p->packet_number < lowest_acked) {
                         return std::make_pair(true, quicpp::error::success);
                      }
@@ -313,9 +311,9 @@ detect_lost_packets(std::chrono::system_clock::time_point now,
 
     nanoseconds delay_until_lost(uint64_t((1.0 + quicpp::ackhandler::time_reordering_fraction) * max_rtt));
 
-    std::vector<quicpp::ackhandler::packet *> lost_packets;
+    std::vector<std::shared_ptr<quicpp::ackhandler::packet>> lost_packets;
     this->packet_history
-        .iterate([&, this] (quicpp::ackhandler::packet *p) -> std::pair<bool, quicpp::base::error_t> {
+        .iterate([&, this] (std::shared_ptr<quicpp::ackhandler::packet> &p) -> std::pair<bool, quicpp::base::error_t> {
                      if (p->packet_number > this->largest_acked) {
                         return std::make_pair(false, quicpp::error::success);
                      }
@@ -385,7 +383,7 @@ quicpp::ackhandler::sent_packet_handler::alarm_timeout() {
 
 quicpp::base::error_t
 quicpp::ackhandler::sent_packet_handler::
-on_packet_acked(quicpp::ackhandler::packet *p) {
+on_packet_acked(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     if (this->packet_history.get_packet(p->packet_number) == nullptr) {
         return quicpp::error::success;
     }
@@ -430,7 +428,7 @@ on_packet_acked(quicpp::ackhandler::packet *p) {
 
 quicpp::base::error_t
 quicpp::ackhandler::sent_packet_handler::
-stop_retransmission_for(quicpp::ackhandler::packet *p) {
+stop_retransmission_for(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     quicpp::base::error_t err = 
         this->packet_history.mark_cannot_be_retransmitted(p->packet_number);
     if (err != quicpp::error::success) {
@@ -458,7 +456,7 @@ void quicpp::ackhandler::sent_packet_handler::verify_rto(uint64_t pn) {
     this->congestion->on_retransmission_timeout(true);
 }
 
-quicpp::ackhandler::packet *
+std::shared_ptr<quicpp::ackhandler::packet>
 quicpp::ackhandler::sent_packet_handler::dequeue_packet_for_retransmission() {
     if (this->retransmission_queue.empty()) {
         return nullptr;
@@ -522,8 +520,6 @@ int quicpp::ackhandler::sent_packet_handler::should_send_num_packets() {
                          double(delay.count())));
 }
 
-
-
 quicpp::base::error_t
 quicpp::ackhandler::sent_packet_handler::queue_rtos() {
     this->largest_sent_before_rto = this->ls_pn;
@@ -544,9 +540,9 @@ quicpp::ackhandler::sent_packet_handler::queue_rtos() {
 quicpp::base::error_t
 quicpp::ackhandler::sent_packet_handler::
 queue_handshake_packets_for_retransmission() {
-    std::vector<quicpp::ackhandler::packet *> handshake_packets;
+    std::vector<std::shared_ptr<quicpp::ackhandler::packet>> handshake_packets;
     this->packet_history
-        .iterate([&] (quicpp::ackhandler::packet *p)
+        .iterate([&] (std::shared_ptr<quicpp::ackhandler::packet> &p)
                  -> std::pair<bool, quicpp::base::error_t> {
                     if (p->can_be_retransmitted &&
                         p->encryption_level < quicpp::crypt::encryption_forward_secure) {
@@ -571,7 +567,7 @@ queue_handshake_packets_for_retransmission() {
 
 quicpp::base::error_t
 quicpp::ackhandler::sent_packet_handler::
-queue_packet_for_retransmission(quicpp::ackhandler::packet *p) {
+queue_packet_for_retransmission(std::shared_ptr<quicpp::ackhandler::packet> &p) {
     if (!p->can_be_retransmitted) {
         return quicpp::error::bug;
     }
@@ -621,7 +617,7 @@ quicpp::ackhandler::sent_packet_handler::compute_rto_timeout() {
 
 bool
 quicpp::ackhandler::sent_packet_handler::
-skipped_packets_acked(quicpp::frame::ack *ack) {
+skipped_packets_acked(std::shared_ptr<quicpp::frame::ack> &ack) {
     for (auto p_itr = this->skipped_packets.begin();
          p_itr != this->skipped_packets.end();
          p_itr++) {
