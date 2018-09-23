@@ -27,10 +27,10 @@ bool quicpp::stream::stream_framer::has_crypto_stream_data() {
     return this->_has_crypto_stream_data;
 }
 
-quicpp::frame::stream *
+std::shared_ptr<quicpp::frame::stream>
 quicpp::stream::stream_framer::pop_crypto_stream_frame(uint64_t maxlen) {
     std::lock_guard<std::mutex> locker(this->stream_queue_mutex);
-    quicpp::frame::stream *frame;
+    std::shared_ptr<quicpp::frame::stream> frame;
     bool has_more_data;
     std::tie(frame, has_more_data) = 
         this->crypto_stream.pop_stream_frame(maxlen);
@@ -38,10 +38,10 @@ quicpp::stream::stream_framer::pop_crypto_stream_frame(uint64_t maxlen) {
     return frame;
 }
 
-std::vector<quicpp::frame::stream *>
+std::vector<std::shared_ptr<quicpp::frame::stream>>
 quicpp::stream::stream_framer::pop_stream_frames(uint64_t max_total_len) {
     uint64_t current_len = 0;
-    std::vector<quicpp::frame::stream *> frames;
+    std::vector<std::shared_ptr<quicpp::frame::stream>> frames;
 
     std::lock_guard<std::mutex> locker(this->stream_queue_mutex);
 
@@ -53,15 +53,15 @@ quicpp::stream::stream_framer::pop_stream_frames(uint64_t max_total_len) {
         quicpp::base::stream_id_t id = this->stream_queue.front();
         this->stream_queue.pop();
 
-        quicpp::stream::send_stream *sstr;
+        std::shared_ptr<quicpp::stream::send_stream> sstr;
         quicpp::base::error_t err;
         std::tie(sstr, err) = this->stream_getter.get_or_open_send_stream(id);
 
-        if (sstr == nullptr || err != quicpp::error::success) {
+        if (bool(sstr) == false || err != quicpp::error::success) {
             this->active_streams.erase(this->active_streams.find(id));
             continue;
         }
-        quicpp::frame::stream *frame;
+        std::shared_ptr<quicpp::frame::stream> frame;
         bool has_more_data;
         std::tie(frame, has_more_data) =
             sstr->pop_stream_frame(max_total_len - current_len);
@@ -71,7 +71,7 @@ quicpp::stream::stream_framer::pop_stream_frames(uint64_t max_total_len) {
         else {
             this->active_streams.erase(this->active_streams.find(id));
         }
-        if (frame == nullptr) {
+        if (bool(frame) == false) {
             continue;
         }
         frames.push_back(frame);

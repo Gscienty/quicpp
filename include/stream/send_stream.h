@@ -51,18 +51,18 @@ public:
                 std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol);
 
     quicpp::base::stream_id_t &stream_id();
-    std::tuple<bool, quicpp::frame::stream *, bool>
+    std::tuple<bool, std::shared_ptr<quicpp::frame::stream>, bool>
     pop_stream_frame_implement(uint64_t max_bytes);
-    std::pair<quicpp::frame::stream *, bool>
+    std::pair<std::shared_ptr<quicpp::frame::stream>, bool>
     pop_stream_frame(uint64_t max_bytes);
     std::pair<std::basic_string<uint8_t>, bool> get_data_for_writing(uint64_t max_bytes);
     virtual quicpp::base::error_t close() override;
     std::pair<bool, quicpp::base::error_t>
     cancel_write_implement(uint16_t errorcode, quicpp::base::error_t write_err);
     quicpp::base::error_t cancel_write(uint16_t errorcode);
-    bool handle_stop_sending_frame_implement(quicpp::frame::stop_sending *frame);
-    void handle_stop_sending_frame(quicpp::frame::stop_sending *frame);
-    void handle_max_stream_data_frame(quicpp::frame::max_stream_data *frame);
+    bool handle_stop_sending_frame_implement(std::shared_ptr<quicpp::frame::stop_sending> &frame);
+    void handle_stop_sending_frame(std::shared_ptr<quicpp::frame::stop_sending> &frame);
+    void handle_max_stream_data_frame(std::shared_ptr<quicpp::frame::max_stream_data> &frame);
     quicpp::base::error_t set_write_deadline(std::chrono::system_clock::time_point t);
     void close_for_shutdown(quicpp::base::error_t err);
     uint64_t get_write_offset();

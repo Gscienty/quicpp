@@ -8,6 +8,7 @@
 #include <mutex>
 #include <map>
 #include <functional>
+#include <memory>
 
 namespace quicpp {
 namespace stream {
@@ -21,12 +22,12 @@ private:
     quicpp::stream::crypto_stream &crypto_stream;
     quicpp::stream::stream_getter &stream_getter;
     quicpp::flowcontrol::connection &conn_flowcontroller;
-    std::function<void (quicpp::frame::frame *)> callback;
+    std::function<void (std::shared_ptr<quicpp::frame::frame>)> callback;
 public:
     window_update_queue(quicpp::stream::stream_getter &stream_getter,
                         quicpp::stream::crypto_stream &crypto_stream,
                         quicpp::flowcontrol::connection &conn_fc,
-                        std::function<void (quicpp::frame::frame *)> cb);
+                        std::function<void (std::shared_ptr<quicpp::frame::frame>)> cb);
     void add_stream(quicpp::base::stream_id_t id);
     void add_connection();
     void queue_all();

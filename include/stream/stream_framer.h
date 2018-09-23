@@ -28,8 +28,8 @@ public:
 
     void add_active_stream(quicpp::base::stream_id_t stream_id);
     bool has_crypto_stream_data();
-    quicpp::frame::stream *pop_crypto_stream_frame(uint64_t maxlen);
-    std::vector<quicpp::frame::stream *> pop_stream_frames(uint64_t max_total_len);
+    std::shared_ptr<quicpp::frame::stream> pop_crypto_stream_frame(uint64_t maxlen);
+    std::vector<std::shared_ptr<quicpp::frame::stream>> pop_stream_frames(uint64_t max_total_len);
 
 };
 

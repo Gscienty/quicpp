@@ -18,29 +18,29 @@ private:
     quicpp::rw_mutex rw_mutex;
     std::condition_variable cond;
 
-    std::map<quicpp::base::stream_id_t, quicpp::stream::stream *> streams;
+    std::map<quicpp::base::stream_id_t, std::shared_ptr<quicpp::stream::stream>> streams;
 
     quicpp::base::stream_id_t next_stream;
     quicpp::base::stream_id_t max_stream;
     quicpp::base::stream_id_t highest_stream;
 
-    std::function<quicpp::stream::stream * (quicpp::base::stream_id_t)> new_stream;
-    std::function<void (quicpp::frame::frame *)> _queue_stream_id_blocked;
-    std::function<void (quicpp::frame::stream_id_blocked *)> queue_stream_id_blocked;
+    std::function<std::shared_ptr<quicpp::stream::stream> (quicpp::base::stream_id_t)> new_stream;
+    std::function<void (std::shared_ptr<quicpp::frame::frame>)> _queue_stream_id_blocked;
+    std::function<void (std::shared_ptr<quicpp::frame::stream_id_blocked>)> queue_stream_id_blocked;
 
     quicpp::base::error_t close_err;
 public:
     outgoing_bidi_streamsmap(quicpp::base::stream_id_t next_stream,
-                             std::function<quicpp::stream::stream * (quicpp::base::stream_id_t)> new_stream,
-                             std::function<void (quicpp::frame::frame *)> queue_control_frame);
+                             std::function<std::shared_ptr<quicpp::stream::stream> (quicpp::base::stream_id_t)> new_stream,
+                             std::function<void (std::shared_ptr<quicpp::frame::frame>)> queue_control_frame);
 
-    std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
     open_stream_implement();
-    std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
     open_stream();
-    std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
     open_stream_sync();
-    std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
     get_stream(quicpp::base::stream_id_t id);
     quicpp::base::error_t delete_stream(quicpp::base::stream_id_t id);
     void set_max_stream(quicpp::base::stream_id_t id);

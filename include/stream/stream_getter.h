@@ -13,10 +13,12 @@ namespace stream {
 class stream_getter {
 public:
     virtual
-    std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::receive_stream>,
+        quicpp::base::error_t>
     get_or_open_receive_stream(quicpp::base::stream_id_t stream_id) = 0;
     virtual 
-    std::pair<quicpp::stream::send_stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::send_stream>,
+        quicpp::base::error_t>
     get_or_open_send_stream(quicpp::base::stream_id_t stream_id) = 0;
 };
 

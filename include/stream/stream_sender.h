@@ -4,6 +4,7 @@
 #include "frame/type.h"
 #include "base/stream_id_t.h"
 #include <functional>
+#include <memory>
 
 namespace quicpp {
 namespace stream {
@@ -11,7 +12,7 @@ namespace stream {
 class stream_sender {
 public:
     virtual ~stream_sender() {}
-    virtual void queue_control_frame(quicpp::frame::frame *frame) = 0;
+    virtual void queue_control_frame(std::shared_ptr<quicpp::frame::frame> frame) = 0;
     virtual void on_has_stream_data(quicpp::base::stream_id_t stream_id) = 0;
     virtual void on_stream_completed(quicpp::base::stream_id_t stream_id) = 0;
 };
@@ -26,7 +27,7 @@ public:
         : sender(sender)
         , on_stream_completed_implement(func) {}
 
-    virtual void queue_control_frame(quicpp::frame::frame *frame) override {
+    virtual void queue_control_frame(std::shared_ptr<quicpp::frame::frame> frame) override {
         this->sender.queue_control_frame(frame);
     }
 

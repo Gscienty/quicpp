@@ -23,7 +23,7 @@ quicpp::base::stream_id_t &quicpp::stream::send_stream::stream_id() {
     return this->_stream_id;
 }
 
-std::tuple<bool, quicpp::frame::stream *, bool>
+std::tuple<bool, std::shared_ptr<quicpp::frame::stream>, bool>
 quicpp::stream::send_stream::pop_stream_frame_implement(uint64_t max_bytes) {
     std::lock_guard<std::mutex> locker(this->mutex);
 
@@ -31,7 +31,7 @@ quicpp::stream::send_stream::pop_stream_frame_implement(uint64_t max_bytes) {
         return std::make_tuple(false, nullptr, false);
     }
 
-    quicpp::frame::stream *frame = new quicpp::frame::stream();
+    auto frame = std::make_shared<quicpp::frame::stream>();
     frame->stream_id() = this->_stream_id;
     frame->offset() = this->write_offset;
     frame->len_flag() = true;
@@ -63,10 +63,10 @@ quicpp::stream::send_stream::pop_stream_frame_implement(uint64_t max_bytes) {
     return std::make_tuple(frame->final_flag(), frame, this->data_for_writing.empty() == false);
 }
 
-std::pair<quicpp::frame::stream *, bool>
+std::pair<std::shared_ptr<quicpp::frame::stream>, bool>
 quicpp::stream::send_stream::pop_stream_frame(uint64_t max_bytes) {
     bool completed;
-    quicpp::frame::stream *frame = nullptr;
+    std::shared_ptr<quicpp::frame::stream> frame;
     bool has_more_data;
 
     std::tie(completed, frame, has_more_data) =
@@ -157,7 +157,7 @@ quicpp::base::error_t quicpp::stream::send_stream::cancel_write(uint16_t errorco
 }
 
 bool quicpp::stream::send_stream::
-handle_stop_sending_frame_implement(quicpp::frame::stop_sending *frame) {
+handle_stop_sending_frame_implement(std::shared_ptr<quicpp::frame::stop_sending> &frame) {
     std::lock_guard<std::mutex> locker(this->mutex);
 
     quicpp::base::error_t write_err(frame->application_error_code());
@@ -168,14 +168,14 @@ handle_stop_sending_frame_implement(quicpp::frame::stop_sending *frame) {
 }
 
 void quicpp::stream::send_stream::
-handle_stop_sending_frame(quicpp::frame::stop_sending *frame) {
+handle_stop_sending_frame(std::shared_ptr<quicpp::frame::stop_sending> &frame) {
     if (this->handle_stop_sending_frame_implement(frame)) {
         this->sender.on_stream_completed(this->_stream_id);
     }
 }
 
 void quicpp::stream::send_stream::
-handle_max_stream_data_frame(quicpp::frame::max_stream_data *frame) {
+handle_max_stream_data_frame(std::shared_ptr<quicpp::frame::max_stream_data> &frame) {
     this->flowcontrol->base::send_window(frame->maximum_stream_data());
     std::lock_guard<std::mutex> locker(this->mutex);
     if (this->data_for_writing.empty() == false) {

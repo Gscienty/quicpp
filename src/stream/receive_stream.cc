@@ -43,7 +43,7 @@ quicpp::stream::receive_stream::read_implement(uint8_t *buffer_ptr, size_t size)
 
     size_t bytes_read = 0;
     while (bytes_read < size) {
-        quicpp::frame::stream *frame = this->frame_queue.head();
+        std::shared_ptr<quicpp::frame::stream> frame = this->frame_queue.head();
         if (frame == nullptr && bytes_read > 0) {
             return std::make_tuple(false, bytes_read, this->_close_for_shutdown_err);
         }
@@ -108,7 +108,6 @@ quicpp::stream::receive_stream::read_implement(uint8_t *buffer_ptr, size_t size)
         if (this->readpos_in_frame >= static_cast<ssize_t>(frame->data().size())) {
             this->frame_queue.pop();
             this->fin_read = frame->final_flag();
-            delete frame;
             if (frame->final_flag()) {
                 return std::make_tuple(true, bytes_read, quicpp::error::eof);
             }
@@ -155,7 +154,7 @@ quicpp::stream::receive_stream::cancel_read(quicpp::base::error_t err) {
 
 quicpp::base::error_t 
 quicpp::stream::receive_stream::
-handle_rst_stream_frame(quicpp::frame::rst *frame) {
+handle_rst_stream_frame(std::shared_ptr<quicpp::frame::rst> &frame) {
     bool completed;
     quicpp::base::error_t err;
     std::tie(completed, err) = this->handle_rst_frame_implement(frame);
@@ -169,7 +168,7 @@ handle_rst_stream_frame(quicpp::frame::rst *frame) {
 
 std::pair<bool, quicpp::base::error_t>
 quicpp::stream::receive_stream::
-handle_rst_frame_implement(quicpp::frame::rst *frame) {
+handle_rst_frame_implement(std::shared_ptr<quicpp::frame::rst> &frame) {
     std::lock_guard<std::mutex> locker(this->mutex);
 
     if (this->closed_for_shutdown) {
@@ -194,7 +193,7 @@ handle_rst_frame_implement(quicpp::frame::rst *frame) {
 
 quicpp::base::error_t
 quicpp::stream::receive_stream::
-handle_stream_frame(quicpp::frame::stream *frame) {
+handle_stream_frame(std::shared_ptr<quicpp::frame::stream> &frame) {
     uint64_t max_offset = frame->offset() + frame->data().size();
     quicpp::base::error_t err =
         this->flowcontrol->update_highest_received(max_offset,
@@ -215,11 +214,10 @@ handle_stream_frame(quicpp::frame::stream *frame) {
 }
 
 void quicpp::stream::receive_stream::close_remote(uint64_t offset) {
-    quicpp::frame::stream *frame = new quicpp::frame::stream();
+    std::shared_ptr<quicpp::frame::stream> frame = std::make_shared<quicpp::frame::stream>();
     frame->final_flag() = true;
     frame->offset() = offset;
     this->handle_stream_frame(frame);
-    delete frame;
 }
 
 void quicpp::stream::receive_stream::on_close(uint64_t) {}

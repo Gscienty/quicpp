@@ -56,10 +56,10 @@ public:
     virtual
     std::pair<ssize_t, quicpp::base::error_t>
     read(uint8_t *buffer_ptr, size_t size) override;
-    quicpp::base::error_t handle_stream_frame(quicpp::frame::stream *frame);
+    quicpp::base::error_t handle_stream_frame(std::shared_ptr<quicpp::frame::stream> &frame);
     std::pair<bool, quicpp::base::error_t>
-    handle_rst_frame_implement(quicpp::frame::rst *frame);
-    quicpp::base::error_t handle_rst_stream_frame(quicpp::frame::rst *frame);
+    handle_rst_frame_implement(std::shared_ptr<quicpp::frame::rst> &frame);
+    quicpp::base::error_t handle_rst_stream_frame(std::shared_ptr<quicpp::frame::rst> &frame);
     void close_remote(uint64_t offset);
     void on_close(uint64_t offset);
     void close_for_shutdown(quicpp::base::error_t err);

@@ -2,17 +2,17 @@
 
 quicpp::stream::outgoing_bidi_streamsmap::
 outgoing_bidi_streamsmap(quicpp::base::stream_id_t next_stream,
-                         std::function<quicpp::stream::stream * (quicpp::base::stream_id_t)> new_stream,
-                         std::function<void (quicpp::frame::frame *)> queue_control_frame)
+                         std::function<std::shared_ptr<quicpp::stream::stream> (quicpp::base::stream_id_t)> new_stream,
+                         std::function<void (std::shared_ptr<quicpp::frame::frame>)> queue_control_frame)
     : next_stream(next_stream)
     , new_stream(new_stream)
     , _queue_stream_id_blocked(queue_control_frame)
-    , queue_stream_id_blocked([this] (quicpp::frame::stream_id_blocked *frame) -> void {
+    , queue_stream_id_blocked([this] (std::shared_ptr<quicpp::frame::stream_id_blocked> frame) -> void {
                                 this->_queue_stream_id_blocked(frame);
                               }) {}
 
 
-std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
 quicpp::stream::outgoing_bidi_streamsmap::open_stream_implement() {
     if (this->close_err != quicpp::error::success) {
         return std::make_pair(nullptr, this->close_err);
@@ -20,8 +20,7 @@ quicpp::stream::outgoing_bidi_streamsmap::open_stream_implement() {
 
     if (this->next_stream > this->max_stream) {
         if (this->max_stream == 0 || this->highest_stream < this->max_stream) {
-            quicpp::frame::stream_id_blocked *frame =
-                new quicpp::frame::stream_id_blocked();
+            std::shared_ptr<quicpp::frame::stream_id_blocked> frame = std::make_shared<quicpp::frame::stream_id_blocked>();
             frame->stream_id() = this->max_stream;
             this->queue_stream_id_blocked(frame);
             this->highest_stream = this->max_stream;
@@ -29,25 +28,25 @@ quicpp::stream::outgoing_bidi_streamsmap::open_stream_implement() {
         return std::make_pair(nullptr, quicpp::error::too_many_open_streams);
     }
 
-    quicpp::stream::stream *s = this->new_stream(this->next_stream);
+    std::shared_ptr<quicpp::stream::stream> s = this->new_stream(this->next_stream);
     this->streams[this->next_stream] = s;
     this->next_stream += 4;
     return std::make_pair(s, quicpp::error::success);
 }
 
-std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
 quicpp::stream::outgoing_bidi_streamsmap::open_stream() {
     quicpp::writer_lock_guard locker(this->rw_mutex);
 
     return this->open_stream_implement();
 }
 
-std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
 quicpp::stream::outgoing_bidi_streamsmap::open_stream_sync() {
     std::unique_lock<std::mutex> locker(this->rw_mutex.mutex());
 
     while (true) {
-        quicpp::stream::stream *ret_str;
+        std::shared_ptr<quicpp::stream::stream> ret_str;
         quicpp::base::error_t err;
         std::tie(ret_str, err) = this->open_stream_implement();
         if (err == quicpp::error::success) {
@@ -61,7 +60,7 @@ quicpp::stream::outgoing_bidi_streamsmap::open_stream_sync() {
     }
 }
 
-std::pair<quicpp::stream::stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::stream>, quicpp::base::error_t>
 quicpp::stream::outgoing_bidi_streamsmap::
 get_stream(quicpp::base::stream_id_t id) {
     quicpp::reader_lock_guard locker(this->rw_mutex);

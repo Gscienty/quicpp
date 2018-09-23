@@ -3,7 +3,7 @@
 quicpp::stream::stream::
 stream(quicpp::base::stream_id_t stream_id,
        quicpp::stream::stream_sender &sender,
-       std::shared_ptr<quicpp::flowcontrol::stream> &flowcontrol)
+       std::shared_ptr<quicpp::flowcontrol::stream> flowcontrol)
     : quicpp::stream::send_stream(stream_id,
                                   this->sender_for_sendstream,
                                   flowcontrol)
@@ -55,7 +55,7 @@ void quicpp::stream::stream::close_for_shutdown(quicpp::base::error_t err) {
 }
 
 quicpp::base::error_t
-quicpp::stream::stream::handle_rst_stream_frame(quicpp::frame::rst *frame) {
+quicpp::stream::stream::handle_rst_stream_frame(std::shared_ptr<quicpp::frame::rst> &frame) {
     quicpp::base::error_t err =
         this->receive_stream::handle_rst_stream_frame(frame);
     if (err != quicpp::error::success) {

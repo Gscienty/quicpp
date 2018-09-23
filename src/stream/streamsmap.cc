@@ -1,6 +1,5 @@
 #include "stream/streamsmap.h"
 
-
 quicpp::stream::streamsmap::
 streamsmap(quicpp::stream::stream_sender &sender,
            std::function<std::shared_ptr<quicpp::flowcontrol::stream> (quicpp::base::stream_id_t)> new_flowcontroller,
@@ -29,59 +28,54 @@ streamsmap(quicpp::stream::stream_sender &sender,
         first_incoming_uni_stream = 2;
     }
 
-    this->outgoing_bidi_streams = new quicpp::stream::
+    this->outgoing_bidi_streams.reset(new quicpp::stream::
         outgoing_bidi_streamsmap(first_outgoing_bidi_stream,
-                                 [this] (quicpp::base::stream_id_t id) -> quicpp::stream::stream * {
-                                    return new quicpp::stream::stream(id,
+                                 [this] (quicpp::base::stream_id_t id) -> std::shared_ptr<quicpp::stream::stream> {
+                                    return std::make_shared<quicpp::stream::stream>(id,
                                                                   this->sender,
                                                                   this->new_flowcontroller(id));
                                  },
-                                 [this] (quicpp::frame::frame *frame) -> void {
+                                 [this] (std::shared_ptr<quicpp::frame::frame> frame) -> void {
                                     this->sender.queue_control_frame(frame);
-                                 });
+                                 }));
 
-    this->incoming_bidi_streams = new quicpp::stream::
+    this->incoming_bidi_streams.reset(new quicpp::stream::
         incoming_bidi_streamsmap(first_outgoing_bidi_stream,
                                  quicpp::base::stream_id_t::max_bidi_stream_id(max_incoming_streams, is_client),
                                  max_incoming_streams,
-                                 [this] (quicpp::base::stream_id_t id) -> quicpp::stream::stream * {
-                                    return new quicpp::stream::stream(id,
+                                 [this] (quicpp::base::stream_id_t id) -> std::shared_ptr<quicpp::stream::stream> {
+                                    return std::make_shared<quicpp::stream::stream>(id,
                                                                       this->sender,
                                                                       this->new_flowcontroller(id));
                                  },
-                                 [this] (quicpp::frame::frame *frame) -> void {
+                                 [this] (std::shared_ptr<quicpp::frame::frame> frame) -> void {
                                     this->sender.queue_control_frame(frame);
-                                 });
-    this->outgoing_uni_streams = new quicpp::stream::
+                                 }));
+    this->outgoing_uni_streams.reset(new quicpp::stream::
         outgoing_uni_streamsmap(first_outgoing_uni_stream,
-                                [this] (quicpp::frame::frame *frame) -> void {
+                                [this] (std::shared_ptr<quicpp::frame::frame> frame) -> void {
                                     this->sender.queue_control_frame(frame);
                                 },
-                                [this] (quicpp::base::stream_id_t id) -> quicpp::stream::send_stream * {
-                                    return new quicpp::stream::send_stream(id,
+                                [this] (quicpp::base::stream_id_t id) -> std::shared_ptr<quicpp::stream::send_stream> {
+                                    return std::make_shared<quicpp::stream::send_stream>(id,
                                                                            this->sender,
                                                                            this->new_flowcontroller(id));
-                                });
-    this->incoming_uni_streams = new quicpp::stream::
+                                }));
+    this->incoming_uni_streams.reset(new quicpp::stream::
         incoming_uni_streamsmap(first_incoming_bidi_stream,
                                  quicpp::base::stream_id_t::max_uni_stream_id(max_incoming_uni_streams, is_client),
                                  max_incoming_uni_streams,
-                                 [this] (quicpp::frame::frame *frame) -> void {
+                                 [this] (std::shared_ptr<quicpp::frame::frame> frame) -> void {
                                     this->sender.queue_control_frame(frame);
                                  },
-                                 [this] (quicpp::base::stream_id_t id) -> quicpp::stream::receive_stream * {
-                                    return new quicpp::stream::receive_stream(id,
+                                 [this] (quicpp::base::stream_id_t id) -> std::shared_ptr<quicpp::stream::receive_stream> {
+                                    return std::make_shared<quicpp::stream::receive_stream>(id,
                                                                              this->sender,
                                                                              this->new_flowcontroller(id));
-                                 });
+                                 }));
 }
 
-quicpp::stream::streamsmap::~streamsmap() {
-    delete this->incoming_uni_streams;
-    delete this->incoming_bidi_streams;
-    delete this->outgoing_uni_streams;
-    delete this->outgoing_bidi_streams;
-}
+quicpp::stream::streamsmap::~streamsmap() {}
 
 
 uint8_t quicpp::stream::streamsmap::type(quicpp::base::stream_id_t id) {
@@ -112,7 +106,7 @@ uint8_t quicpp::stream::streamsmap::type(quicpp::base::stream_id_t id) {
     return quicpp::stream::stream_type_error;
 }
 
-std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::receive_stream>, quicpp::base::error_t>
 quicpp::stream::streamsmap::
 get_or_open_receive_stream(quicpp::base::stream_id_t stream_id) {
     switch (this->type(stream_id)) {
@@ -128,7 +122,7 @@ get_or_open_receive_stream(quicpp::base::stream_id_t stream_id) {
     return std::make_pair(nullptr, quicpp::error::invalid_stream_type);
 }
 
-std::pair<quicpp::stream::send_stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::send_stream>, quicpp::base::error_t>
 quicpp::stream::streamsmap::
 get_or_open_send_stream(quicpp::base::stream_id_t stream_id) {
     switch (this->type(stream_id)) {
@@ -146,7 +140,7 @@ get_or_open_send_stream(quicpp::base::stream_id_t stream_id) {
 
 quicpp::base::error_t
 quicpp::stream::streamsmap::
-handle_max_stream_id_frame(quicpp::frame::max_stream_id *frame) {
+handle_max_stream_id_frame(std::shared_ptr<quicpp::frame::max_stream_id> &frame) {
     quicpp::base::stream_id_t id = frame->maximum_stream_id();
     switch (this->type(id)) {
     case quicpp::stream::stream_type_outgoing_bidi:

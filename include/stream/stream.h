@@ -35,7 +35,7 @@ public:
     virtual quicpp::base::error_t close() override;
     quicpp::base::error_t set_deadline(std::chrono::system_clock::time_point t);
     void close_for_shutdown(quicpp::base::error_t err);
-    quicpp::base::error_t handle_rst_stream_frame(quicpp::frame::rst *frame);
+    quicpp::base::error_t handle_rst_stream_frame(std::shared_ptr<quicpp::frame::rst> &frame);
     void check_if_completed();
 };
 

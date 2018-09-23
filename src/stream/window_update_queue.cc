@@ -6,7 +6,7 @@ quicpp::stream::window_update_queue::
 window_update_queue(quicpp::stream::stream_getter &stream_getter,
                     quicpp::stream::crypto_stream &crypto_stream,
                     quicpp::flowcontrol::connection &conn_fc,
-                    std::function<void (quicpp::frame::frame *)> cb)
+                    std::function<void (std::shared_ptr<quicpp::frame::frame>)> cb)
     : queue_conn(false)
     , crypto_stream(crypto_stream)
     , stream_getter(stream_getter)
@@ -27,9 +27,9 @@ void quicpp::stream::window_update_queue::add_connection() {
 void quicpp::stream::window_update_queue::queue_all() {
     std::lock_guard<std::mutex> locker(this->mutex);
     if (this->queue_conn) {
-        quicpp::frame::max_data frame;
-        frame.maximum_data() = this->conn_flowcontroller.update();
-        this->callback(&frame);
+        auto frame = std::make_shared<quicpp::frame::max_data>();
+        frame->maximum_data() = this->conn_flowcontroller.update();
+        this->callback(frame);
         this->queue_conn = false;
     }
 
@@ -54,10 +54,10 @@ void quicpp::stream::window_update_queue::queue_all() {
             continue;
         }
 
-        quicpp::frame::max_stream_data frame;
-        frame.stream_id() = id_itr->first;
-        frame.maximum_stream_data() = offset;
-        this->callback(&frame);
+        auto frame = std::make_shared<quicpp::frame::max_stream_data>();
+        frame->stream_id() = id_itr->first;
+        frame->maximum_stream_data() = offset;
+        this->callback(frame);
         id_itr = this->queue.erase(id_itr);
         id_itr--;
     }

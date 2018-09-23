@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <map>
 #include <functional>
+#include <memory>
 
 namespace quicpp {
 namespace stream {
@@ -17,16 +18,16 @@ private:
     quicpp::rw_mutex rw_mutex;
     std::condition_variable cond;
 
-    std::map<quicpp::base::stream_id_t, quicpp::stream::receive_stream *> streams;
+    std::map<quicpp::base::stream_id_t, std::shared_ptr<quicpp::stream::receive_stream>> streams;
 
     quicpp::base::stream_id_t next_stream;
     quicpp::base::stream_id_t highest_stream;
     quicpp::base::stream_id_t max_stream;
     int max_num_streams;
 
-    std::function<quicpp::stream::receive_stream * (quicpp::base::stream_id_t)> new_stream;
-    std::function<void (quicpp::frame::frame *)> _queue_max_stream_id;
-    std::function<void (quicpp::frame::max_stream_id *)> queue_max_stream_id;
+    std::function<std::shared_ptr<quicpp::stream::receive_stream> (quicpp::base::stream_id_t)> new_stream;
+    std::function<void (std::shared_ptr<quicpp::frame::frame>)> _queue_max_stream_id;
+    std::function<void (std::shared_ptr<quicpp::frame::max_stream_id> &)> queue_max_stream_id;
 
     quicpp::base::error_t close_err;
 
@@ -34,12 +35,12 @@ public:
     incoming_uni_streamsmap(quicpp::base::stream_id_t next_stream,
                             quicpp::base::stream_id_t initial_max_stream_id,
                             int max_num_streams,
-                            std::function<void (quicpp::frame::frame *)> queue_control_frame,
-                            std::function<quicpp::stream::receive_stream * (quicpp::base::stream_id_t)> new_stream);
+                            std::function<void (std::shared_ptr<quicpp::frame::frame>)> queue_control_frame,
+                            std::function<std::shared_ptr<quicpp::stream::receive_stream> (quicpp::base::stream_id_t)> new_stream);
 
-    std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::receive_stream>, quicpp::base::error_t>
     accept_stream();
-    std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::receive_stream>, quicpp::base::error_t>
     get_or_open_stream(quicpp::base::stream_id_t id);
     quicpp::base::error_t delete_stream(quicpp::base::stream_id_t id);
     void close_with_error(quicpp::base::error_t err);

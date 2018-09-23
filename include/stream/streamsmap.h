@@ -30,10 +30,10 @@ private:
     quicpp::stream::stream_sender &sender;
     std::function<std::shared_ptr<quicpp::flowcontrol::stream> (quicpp::base::stream_id_t)> new_flowcontroller;
 
-    quicpp::stream::incoming_uni_streamsmap *incoming_uni_streams;
-    quicpp::stream::incoming_bidi_streamsmap *incoming_bidi_streams;
-    quicpp::stream::outgoing_uni_streamsmap *outgoing_uni_streams;
-    quicpp::stream::outgoing_bidi_streamsmap *outgoing_bidi_streams;
+    std::unique_ptr<quicpp::stream::incoming_uni_streamsmap> incoming_uni_streams;
+    std::unique_ptr<quicpp::stream::incoming_bidi_streamsmap> incoming_bidi_streams;
+    std::unique_ptr<quicpp::stream::outgoing_uni_streamsmap> outgoing_uni_streams;
+    std::unique_ptr<quicpp::stream::outgoing_bidi_streamsmap> outgoing_bidi_streams;
 public:
     streamsmap(quicpp::stream::stream_sender &sender,
                std::function<std::shared_ptr<quicpp::flowcontrol::stream> (quicpp::base::stream_id_t)> new_flowcontroller,
@@ -45,12 +45,12 @@ public:
 
     uint8_t type(quicpp::base::stream_id_t id);
     virtual
-    std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::receive_stream>, quicpp::base::error_t>
     get_or_open_receive_stream(quicpp::base::stream_id_t stream_id) override;
     virtual 
-    std::pair<quicpp::stream::send_stream *, quicpp::base::error_t>
+    std::pair<std::shared_ptr<quicpp::stream::send_stream>, quicpp::base::error_t>
     get_or_open_send_stream(quicpp::base::stream_id_t stream_id) override;
-    quicpp::base::error_t handle_max_stream_id_frame(quicpp::frame::max_stream_id *frame);
+    quicpp::base::error_t handle_max_stream_id_frame(std::shared_ptr<quicpp::frame::max_stream_id> &frame);
     void update_limits(quicpp::handshake::treansport_parameters &param);
     void close_with_error(quicpp::base::error_t err);
 };

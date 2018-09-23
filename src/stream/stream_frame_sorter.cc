@@ -7,7 +7,7 @@ quicpp::stream::stream_frame_sorter::stream_frame_sorter()
 }
 
 quicpp::base::error_t
-quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
+quicpp::stream::stream_frame_sorter::push(std::shared_ptr<quicpp::frame::stream> &frame) {
     if (frame->data().empty()) {
         if (frame->final_flag()) {
             this->queued_frames[frame->offset()] = frame;
@@ -122,8 +122,8 @@ quicpp::stream::stream_frame_sorter::push(quicpp::frame::stream *frame) {
     return quicpp::error::success;
 }
 
-quicpp::frame::stream *quicpp::stream::stream_frame_sorter::pop() {
-    quicpp::frame::stream *frame = this->head();
+std::shared_ptr<quicpp::frame::stream> quicpp::stream::stream_frame_sorter::pop() {
+    std::shared_ptr<quicpp::frame::stream> frame = this->head();
     if (frame != nullptr) {
         this->_read_position += frame->data().size();
         this->queued_frames.erase(this->queued_frames.find(frame->offset()));
@@ -131,7 +131,7 @@ quicpp::frame::stream *quicpp::stream::stream_frame_sorter::pop() {
     return frame;
 }
 
-quicpp::frame::stream *quicpp::stream::stream_frame_sorter::head() {
+std::shared_ptr<quicpp::frame::stream> quicpp::stream::stream_frame_sorter::head() {
     auto frame_itr = this->queued_frames.find(this->_read_position);
     if (frame_itr != this->queued_frames.end()) {
         return std::get<1>(*frame_itr);

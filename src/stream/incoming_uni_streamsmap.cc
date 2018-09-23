@@ -5,23 +5,23 @@ quicpp::stream::incoming_uni_streamsmap::
 incoming_uni_streamsmap(quicpp::base::stream_id_t next_stream,
                         quicpp::base::stream_id_t initial_max_stream_id,
                         int max_num_streams,
-                        std::function<void (quicpp::frame::frame *)> queue_control_frame,
-                        std::function<quicpp::stream::receive_stream * (quicpp::base::stream_id_t)> new_stream)
+                        std::function<void (std::shared_ptr<quicpp::frame::frame>)> queue_control_frame,
+                        std::function<std::shared_ptr<quicpp::stream::receive_stream> (quicpp::base::stream_id_t)> new_stream)
     : next_stream(next_stream)
     , max_stream(initial_max_stream_id)
     , max_num_streams(max_num_streams)
     , new_stream(new_stream)
     , _queue_max_stream_id(queue_control_frame)
-    , queue_max_stream_id([this] (quicpp::frame::max_stream_id *frame) -> void {
-                            this->_queue_max_stream_id(frame);
+    , queue_max_stream_id([this] (std::shared_ptr<quicpp::frame::max_stream_id> &frame) -> void {
+                            this->_queue_max_stream_id(std::dynamic_pointer_cast<quicpp::frame::frame>(frame));
                           }) {}
 
 
-std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::receive_stream>, quicpp::base::error_t>
 quicpp::stream::incoming_uni_streamsmap::accept_stream() {
     std::unique_lock<std::mutex> locker(this->rw_mutex.mutex());
 
-    quicpp::stream::receive_stream *ret_str = nullptr;
+    std::shared_ptr<quicpp::stream::receive_stream> ret_str = nullptr;
     while (true) {
         if (this->close_err != quicpp::error::success) {
             return std::make_pair(nullptr, this->close_err);
@@ -38,7 +38,7 @@ quicpp::stream::incoming_uni_streamsmap::accept_stream() {
     return std::make_pair(ret_str, quicpp::error::success);
 }
 
-std::pair<quicpp::stream::receive_stream *, quicpp::base::error_t>
+std::pair<std::shared_ptr<quicpp::stream::receive_stream>, quicpp::base::error_t>
 quicpp::stream::incoming_uni_streamsmap::
 get_or_open_stream(quicpp::base::stream_id_t id) {
     {
@@ -86,7 +86,7 @@ delete_stream(quicpp::base::stream_id_t id) {
     int num_new_streams = this->max_num_streams - this->streams.size();
     if (num_new_streams > 0) {
         this->max_stream = this->highest_stream + (num_new_streams * 4);
-        quicpp::frame::max_stream_id *frame = new quicpp::frame::max_stream_id();
+        std::shared_ptr<quicpp::frame::max_stream_id> frame = std::make_shared<quicpp::frame::max_stream_id>();
         frame->maximum_stream_id() = this->max_stream;
         this->queue_max_stream_id(frame);
     }
