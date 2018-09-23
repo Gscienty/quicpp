@@ -7,7 +7,8 @@
 namespace quicpp {
 namespace frame {
 
-quicpp::frame::frame *parse_next_frame(std::basic_istream<uint8_t> &reader);
+std::shared_ptr<quicpp::frame::frame>
+parse_next_frame(std::basic_istream<uint8_t> &reader);
 
 }
 }
