@@ -22,20 +22,20 @@ const int max_packets_after_new_missing = 4;
 
 class received_packet_handler {
 private:
-    uint64_t largest_observed;
+    uint64_t _largest_observed;
     uint64_t _ignore_below;
-    std::chrono::system_clock::time_point largest_observed_received_time;
+    std::chrono::system_clock::time_point _largest_observed_received_time;
 
-    quicpp::ackhandler::received_packet_history packet_history;
+    quicpp::ackhandler::received_packet_history _packet_history;
 
-    std::chrono::milliseconds ack_send_delay;
-    quicpp::congestion::rtt &rtt;
+    std::chrono::milliseconds _ack_send_delay;
+    quicpp::congestion::rtt &_rtt;
 
-    int packets_received_since_last_ack;
-    int retransmittable_packets_reveived_since_last_ack;
-    bool ack_queued;
-    std::chrono::system_clock::time_point ack_alarm;
-    std::shared_ptr<quicpp::frame::ack> last_ack;
+    int _packets_received_since_last_ack;
+    int _retransmittable_packets_reveived_since_last_ack;
+    bool _ack_queued;
+    std::chrono::system_clock::time_point _ack_alarm;
+    std::shared_ptr<quicpp::frame::ack> _last_ack;
 
 public:
     received_packet_handler(quicpp::congestion::rtt &rtt);
@@ -52,6 +52,24 @@ public:
                          bool was_missing);
     std::shared_ptr<quicpp::frame::ack> get_ack_frame();
     std::chrono::system_clock::time_point &alarm_timeout();
+
+    uint64_t &largest_observed() { return this->_largest_observed; }
+    uint64_t &ignore_below() { return this->_ignore_below; }
+    std::chrono::system_clock::time_point &largest_observed_received_time() {
+        return this->_largest_observed_received_time;
+    }
+    std::chrono::milliseconds &ack_send_delay() { return this->_ack_send_delay; }
+    int &packets_received_since_last_ack() {
+        return this->_packets_received_since_last_ack;
+    }
+    bool &ack_queued() { return this->_ack_queued; }
+    std::chrono::system_clock::time_point &ack_alarm() {
+        return this->_ack_alarm;
+    }
+    std::shared_ptr<quicpp::frame::ack> &last_ack() {
+        return this->_last_ack;
+    }
+    
 };
 
 }
