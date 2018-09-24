@@ -9,7 +9,7 @@ quicpp::frame::ack::ack(std::basic_istream<uint8_t> &in) {
     in.seekg(1, std::ios_base::cur);
 
     quicpp::base::varint largest(in);
-    this->_delay = std::chrono::nanoseconds(quicpp::base::varint(in));
+    this->_delay = std::chrono::microseconds(quicpp::base::varint(in));
     int len = uint64_t(quicpp::base::varint(in));
 
     quicpp::base::varint first(in);
@@ -94,7 +94,7 @@ uint64_t quicpp::frame::ack::smallest() const {
     return std::get<quicpp::frame::ack_range_smallest>(*this->_ranges.rbegin());
 }
 
-std::chrono::nanoseconds &quicpp::frame::ack::delay() {
+std::chrono::microseconds &quicpp::frame::ack::delay() {
     return this->_delay;
 }
 
