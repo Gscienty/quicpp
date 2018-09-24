@@ -145,7 +145,7 @@ quicpp::ackhandler::received_packet_handler::get_ack_frame() {
     std::shared_ptr<quicpp::frame::ack> ack = std::make_shared<quicpp::frame::ack>();
 
     ack->ranges() = this->packet_history.get_ack_ranges();
-    ack->delay() = now - this->largest_observed_received_time;
+    ack->delay() = std::chrono::duration_cast<std::chrono::microseconds>(now - this->largest_observed_received_time);
 
     this->last_ack = ack;
     this->ack_alarm = std::chrono::system_clock::time_point::min();

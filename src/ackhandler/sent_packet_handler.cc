@@ -62,7 +62,7 @@ void quicpp::ackhandler::sent_packet_handler::set_handshake_complete() {
                                  });
     std::for_each(handshake_packets.begin(),
                   handshake_packets.end(),
-                  [this] (quicpp::ackhandler::packet *p) -> void {
+                  [this] (std::shared_ptr<quicpp::ackhandler::packet> &p) -> void {
                       this->packet_history.remove(p->packet_number);
                   });
 
@@ -165,7 +165,7 @@ received_ack(std::shared_ptr<quicpp::frame::ack> &ack,
     }
 
     if (this->maybe_update_rtt(largest_acked,
-                               std::chrono::duration<std::chrono::milliseconds>(ack->delay()),
+                               ack->delay(),
                                rcv_time)) {
         this->congestion->maybe_exit_slowstart();
     }
