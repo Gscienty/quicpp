@@ -13,11 +13,11 @@ public:
     error_t() : sign(0) {}
     error_t(uint64_t sign) : sign(sign) {}
 
-    bool operator== (const quicpp::base::error_t &err) {
+    bool operator== (const quicpp::base::error_t &err) const {
         return this->sign == err.sign;
     }
 
-    bool operator!= (const quicpp::base::error_t &err) {
+    bool operator!= (const quicpp::base::error_t &err) const {
         return this->sign != err.sign;
     }
 
