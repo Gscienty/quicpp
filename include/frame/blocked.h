@@ -17,6 +17,8 @@ public:
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
 
     quicpp::base::varint &offset();
+
+    bool operator==(const quicpp::frame::blocked &frame) const;
 };
 }
 }

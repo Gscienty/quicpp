@@ -31,3 +31,9 @@ quicpp::base::stream_id_t &quicpp::frame::stream_blocked::stream_id() {
 quicpp::base::varint &quicpp::frame::stream_blocked::offset() {
     return this->_offset;
 }
+
+bool quicpp::frame::stream_blocked::
+operator==(const quicpp::frame::stream_blocked &frame) const {
+    return this->_stream_id == frame._stream_id &&
+        this->_offset == frame._offset;
+}

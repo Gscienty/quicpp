@@ -20,6 +20,8 @@ public:
 
     quicpp::base::stream_id_t &stream_id();
     quicpp::base::varint &offset();
+
+    bool operator==(const quicpp::frame::stream_blocked &frame) const;
 };
 }
 }

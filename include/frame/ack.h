@@ -33,6 +33,8 @@ public:
     bool has_missing_ranges() const;
 
     bool acks_packet(uint64_t p);
+    
+    bool operator==(const quicpp::frame::ack &frame) const;
 };
 
 }

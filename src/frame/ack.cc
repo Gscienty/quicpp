@@ -129,3 +129,25 @@ bool quicpp::frame::ack::acks_packet(uint64_t p) {
 
     return p <= std::get<quicpp::frame::ack_range_largest>(this->_ranges[i]);
 }
+
+bool quicpp::frame::ack::operator==(const quicpp::frame::ack &frame) const {
+    if (this->_delay != frame._delay) {
+        return false;
+    }
+    if (this->_ranges.size() != frame._ranges.size()) {
+        return false;
+    }
+    
+    auto this_itr = this->_ranges.begin();
+    auto other_itr = frame._ranges.begin();
+    size_t size = this->_ranges.size();
+    while (size--) {
+        if (*this_itr != *other_itr) {
+            return false;
+        }
+        this_itr++;
+        other_itr++;
+    }
+
+    return true;
+}

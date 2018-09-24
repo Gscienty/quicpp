@@ -24,3 +24,7 @@ void quicpp::frame::blocked::encode(std::basic_ostream<uint8_t> &out) const {
 quicpp::base::varint &quicpp::frame::blocked::offset() {
     return this->_offset;
 }
+
+bool quicpp::frame::blocked::operator==(const quicpp::frame::blocked &frame) const {
+    return this->_offset == frame._offset;
+}

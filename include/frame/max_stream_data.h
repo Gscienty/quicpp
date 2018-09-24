@@ -20,6 +20,8 @@ public:
 
     quicpp::base::stream_id_t &stream_id();
     quicpp::base::varint &maximum_stream_data();
+
+    bool operator==(const quicpp::frame::max_stream_data &frame) const;
 };
 }
 }

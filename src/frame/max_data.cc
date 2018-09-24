@@ -24,3 +24,7 @@ void quicpp::frame::max_data::encode(std::basic_ostream<uint8_t> &out) const {
 quicpp::base::varint &quicpp::frame::max_data::maximum_data() {
     return this->_maximum_data;
 }
+
+bool quicpp::frame::max_data::operator==(const quicpp::frame::max_data &frame) const {
+    return this->_maximum_data == frame._maximum_data;
+}

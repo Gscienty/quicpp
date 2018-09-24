@@ -32,3 +32,9 @@ quicpp::base::stream_id_t &quicpp::frame::stop_sending::stream_id() {
 uint16_t &quicpp::frame::stop_sending::application_error_code() {
     return this->_application_error_code;
 }
+
+bool quicpp::frame::stop_sending::
+operator==(const quicpp::frame::stop_sending &frame) const {
+    return this->_stream_id == frame._stream_id &&
+        this->_application_error_code == frame._application_error_code;
+}

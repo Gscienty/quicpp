@@ -38,3 +38,9 @@ uint16_t &quicpp::frame::rst::application_error_code() {
 quicpp::base::varint &quicpp::frame::rst::final_offset() {
     return this->_final_offset;
 }
+
+bool quicpp::frame::rst::operator==(const quicpp::frame::rst &frame) const {
+    return this->_stream_id == frame._stream_id &&
+        this->_application_error_code == frame._application_error_code &&
+        this->_final_offset == frame._final_offset;
+}

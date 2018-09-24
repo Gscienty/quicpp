@@ -9,7 +9,7 @@ namespace frame {
 class connection_close : public quicpp::frame::frame {
 private:
     uint16_t _error_code;
-    std::basic_string<uint8_t> _reason_phrase;
+    std::string _reason_phrase;
 public:
     connection_close();
     connection_close(std::basic_istream<uint8_t> &in);
@@ -18,7 +18,9 @@ public:
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
 
     uint16_t &error();
-    std::basic_string<uint8_t> &reason_phrase();
+    std::string &reason_phrase();
+
+    bool operator== (const quicpp::frame::connection_close &) const;
 };
 }
 }

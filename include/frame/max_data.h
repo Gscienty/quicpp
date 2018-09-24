@@ -16,6 +16,8 @@ public:
     virtual size_t size() const override;
     virtual void encode(std::basic_ostream<uint8_t> &out) const override;
     quicpp::base::varint &maximum_data();
+
+    bool operator==(const quicpp::frame::max_data &frame) const;
 };
 }
 }

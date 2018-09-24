@@ -9,7 +9,8 @@ quicpp::frame::connection_close::connection_close(std::basic_istream<uint8_t> &i
     this->_error_code = quicpp::bigendian_decode<uint16_t>(in);
     quicpp::base::varint reason_phrase_length(in);
     this->_reason_phrase.resize(reason_phrase_length.value());
-    in.get(const_cast<uint8_t *>(this->_reason_phrase.data()), reason_phrase_length.value());
+    in.read(reinterpret_cast<uint8_t *>(const_cast<char *>(this->_reason_phrase.data())),
+           reason_phrase_length.value());
 }
 
 uint8_t quicpp::frame::connection_close::type() const {
@@ -25,13 +26,20 @@ void quicpp::frame::connection_close::encode(std::basic_ostream<uint8_t> &out) c
     out.put(this->type());
     quicpp::bigendian_encode(out, this->_error_code);
     quicpp::base::varint(this->_reason_phrase.size()).encode(out);
-    out.write(this->_reason_phrase.data(), this->_reason_phrase.size());
+    out.write(reinterpret_cast<const uint8_t *>(this->_reason_phrase.data()),
+              this->_reason_phrase.size());
 }
 
 uint16_t &quicpp::frame::connection_close::error() {
     return this->_error_code;
 }
 
-std::basic_string<uint8_t> &quicpp::frame::connection_close::reason_phrase() {
+std::string &quicpp::frame::connection_close::reason_phrase() {
     return this->_reason_phrase;
+}
+
+bool quicpp::frame::connection_close::
+operator== (const quicpp::frame::connection_close &frame) const {
+    return this->_error_code == frame._error_code &&
+        this->_reason_phrase == frame._reason_phrase;
 }

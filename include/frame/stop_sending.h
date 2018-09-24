@@ -19,7 +19,9 @@ public:
 
     quicpp::base::stream_id_t &stream_id();
     uint16_t &application_error_code();
+    bool operator==(const quicpp::frame::stop_sending &frame) const;
 };
+
 }
 }
 

@@ -24,3 +24,8 @@ void quicpp::frame::max_stream_id::encode(std::basic_ostream<uint8_t> &out) cons
 quicpp::base::stream_id_t &quicpp::frame::max_stream_id::maximum_stream_id() {
     return this->_maximum_stream_id;
 }
+
+bool quicpp::frame::max_stream_id::
+operator==(const quicpp::frame::max_stream_id &frame) const {
+    return this->_maximum_stream_id == frame._maximum_stream_id;
+}

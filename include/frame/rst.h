@@ -22,6 +22,8 @@ public:
     quicpp::base::stream_id_t &stream_id();
     uint16_t &application_error_code();
     quicpp::base::varint &final_offset();
+
+    bool operator==(const quicpp::frame::rst &frame) const;
 };
 }
 }

@@ -31,3 +31,9 @@ quicpp::base::stream_id_t &quicpp::frame::max_stream_data::stream_id() {
 quicpp::base::varint &quicpp::frame::max_stream_data::maximum_stream_data() {
     return this->_maximum_stream_data;
 }
+
+bool quicpp::frame::max_stream_data::
+operator==(const quicpp::frame::max_stream_data &frame) const {
+    return this->_stream_id == frame._stream_id &&
+        this->_maximum_stream_data == frame._maximum_stream_data;
+}
