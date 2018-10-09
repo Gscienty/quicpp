@@ -70,6 +70,9 @@ public:
         return this->_last_ack;
     }
     
+    int &retransmittable_packets_reveived_since_last_ack() {
+        return this->_retransmittable_packets_reveived_since_last_ack;
+    }
 };
 
 }
