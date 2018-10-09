@@ -156,7 +156,7 @@ pack_connection_close(std::shared_ptr<quicpp::frame::connection_close> &frame) {
     packet->frames() = frames;
     packet->encryption_level() = std::get<0>(sealer);
 
-    return std::make_pair(packet, std::get<1>(raw));
+    return std::make_pair(std::move(packet), std::get<1>(raw));
 }
 std::pair<std::unique_ptr<quicpp::packet::packed_packet>,
     quicpp::base::error_t>
@@ -177,7 +177,7 @@ quicpp::packet::packer::pack_ack_packet() {
     packet->frames() = frames;
     packet->encryption_level() = std::get<0>(sealer);
 
-    return std::make_pair(packet, std::get<1>(raw));
+    return std::make_pair(std::move(packet), std::get<1>(raw));
 }
 
 std::pair<std::vector<std::shared_ptr<quicpp::packet::packed_packet>>,
@@ -365,7 +365,7 @@ quicpp::packet::packer::
 queue_control_frame(std::shared_ptr<quicpp::frame::frame> &frame) {
     switch (frame->type()) {
     case quicpp::frame::frame_type_ack:
-        this->ack_frame = frame;
+        this->ack_frame = std::dynamic_pointer_cast<quicpp::frame::ack>(frame);
         break;
     default:
         {
